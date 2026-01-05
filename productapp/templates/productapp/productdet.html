@@ -1,0 +1,348 @@
+{% extends 'usersapp/base.html' %}
+{% load static %}
+
+{% block title %}{{ productdetail.name }} | Gado Shop{% endblock %}
+
+{% block page_title %}{{ productdetail.name }}{% endblock %}
+
+{% block extra_head %}
+<style>
+    .product-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 3rem;
+        align-items: start;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    /* Product Image Section */
+    .image-gallery {
+        position: sticky;
+        top: 90px;
+    }
+
+    .main-image-wrapper {
+        background: white;
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        box-shadow: var(--shadow-lg);
+        border: 1px solid #f1f5f9;
+        aspect-ratio: 1/1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+    }
+
+    .main-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: var(--transition);
+    }
+
+    .main-image-wrapper:hover .main-image {
+        transform: scale(1.05);
+    }
+
+    /* Product Details Section */
+    .details-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+    }
+
+    .product-info-glass {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-radius: var(--radius-lg);
+        padding: 2.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        box-shadow: var(--shadow-md);
+    }
+
+    .category-tag {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        background: rgba(79, 70, 229, 0.1);
+        color: var(--primary);
+        border-radius: 30px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        margin-bottom: 1rem;
+    }
+
+    .product-name {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--text-main);
+        margin-bottom: 1rem;
+        line-height: 1.1;
+    }
+
+    .price-tag {
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--primary);
+        display: flex;
+        align-items: baseline;
+        gap: 0.25rem;
+    }
+
+    .price-currency {
+        font-size: 1.25rem;
+        font-weight: 600;
+    }
+
+    .stock-status {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        margin-top: 0.5rem;
+    }
+
+    .status-indicator {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+    }
+
+    .status-in { background: #10b981; color: #065f46; }
+    .status-out { background: #ef4444; color: #991b1b; }
+
+    .description-box {
+        margin-top: 1.5rem;
+    }
+
+    .description-title {
+        font-weight: 700;
+        color: var(--text-main);
+        margin-bottom: 0.75rem;
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .description-text {
+        color: var(--text-muted);
+        line-height: 1.7;
+        font-size: 0.9375rem;
+    }
+
+    /* Actions */
+    .action-row {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .btn-large {
+        flex: 1;
+        padding: 1rem 2rem;
+        height: 56px;
+        font-size: 1rem;
+        justify-content: center;
+    }
+
+    .btn-outline {
+        background: white;
+        color: var(--text-main);
+        border: 1px solid #e2e8f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 56px;
+        height: 56px;
+        border-radius: var(--radius-md);
+        transition: var(--transition);
+        text-decoration: none;
+    }
+
+    .btn-outline:hover {
+        background: #f8fafc;
+        border-color: var(--primary);
+        color: var(--primary);
+    }
+
+    /* Features Grid */
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+
+    .feature-item {
+        background: white;
+        padding: 1.25rem;
+        border-radius: var(--radius-md);
+        border: 1px solid #f1f5f9;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .feature-icon {
+        color: var(--primary);
+        font-size: 1.25rem;
+    }
+
+    .feature-label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+    }
+
+    .feature-value {
+        font-size: 0.9375rem;
+        font-weight: 700;
+        color: var(--text-main);
+    }
+
+    @media (max-width: 1024px) {
+        .product-container { gap: 2rem; }
+        .product-name { font-size: 2rem; }
+    }
+
+    @media (max-width: 768px) {
+        .product-container {
+            grid-template-columns: 1fr;
+        }
+        .image-gallery {
+            position: relative;
+            top: 0;
+        }
+        .product-info-glass {
+            padding: 1.5rem;
+        }
+    }
+
+    /* Animation */
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .animate-in {
+        animation: fadeInUp 0.6s ease-out forwards;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="product-container">
+    <!-- Left: Image -->
+    <div class="image-gallery animate-in">
+        <div class="main-image-wrapper">
+            {% if productdetail.image %}
+                <img src="{{ productdetail.image.url }}" alt="{{ productdetail.name }}" class="main-image">
+            {% else %}
+                <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=800&auto=format&fit=crop" alt="Placeholder" class="main-image">
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Right: Details -->
+    <div class="details-panel animate-in" style="animation-delay: 0.1s;">
+        <div class="product-info-glass">
+            <span class="category-tag">{{ productdetail.category.name }}</span>
+            <h1 class="product-name">{{ productdetail.name }}</h1>
+            
+            <div class="price-tag">
+                <span class="price-currency">$</span>
+                <span>{{ productdetail.price }}</span>
+            </div>
+
+            <div class="stock-status">
+                {% if productdetail.available and productdetail.quatentity > 0 %}
+                    <div class="status-indicator status-in"></div>
+                    <span class="status-in">Alaabtan hadda waa la heli karaa (In Stock)</span>
+                {% else %}
+                    <div class="status-indicator status-out"></div>
+                    <span class="status-out">Waa laga dhammaaday (Out of Stock)</span>
+                {% endif %}
+            </div>
+
+            <div class="description-box">
+                <h3 class="description-title">
+                    <i class="fa-solid fa-circle-info"></i>
+                    Sharaxaadda Alaabta (Product Details)
+                </h3>
+                <p class="description-text">
+                    {{ productdetail.description|default:"Wax dheeraad ah lagama qorin alaabtan hadda. Alaabtan waa mid tayo sare leh oo loogu talagalay in lagu qanciyo baahiyahaaga." }}
+                </p>
+            </div>
+
+            <div class="action-row">
+                {% if productdetail.available and productdetail.quatentity > 0 %}
+                    <a href="{% url 'add_to_cart' productdetail.id %}" class="btn-primary btn-large">
+                        <i class="fa-solid fa-cart-plus"></i>
+                        Ku dar Gaadhiga (Add to Cart)
+                    </a>
+                {% else %}
+                    <button class="btn-primary btn-large" style="opacity: 0.5; cursor: not-allowed;" disabled>
+                        <i class="fa-solid fa-clock"></i>
+                        Sug inta la keenayo
+                    </button>
+                {% endif %}
+                <a href="{% url 'product_list' %}" class="btn-outline" title="Back to Shop">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </a>
+            </div>
+        </div>
+
+        <div class="features-grid animate-in" style="animation-delay: 0.2s;">
+            <div class="feature-item">
+                <i class="fa-solid fa-boxes-stacked feature-icon"></i>
+                <span class="feature-label">Availability</span>
+                <span class="feature-value">{{ productdetail.quatentity }} xidigood</span>
+            </div>
+            <div class="feature-item">
+                <i class="fa-solid fa-truck-fast feature-icon"></i>
+                <span class="feature-label">Garsiinta</span>
+                <span class="feature-value">24 Saac Gudahood</span>
+            </div>
+            <div class="feature-item">
+                <i class="fa-solid fa-shield-halved feature-icon"></i>
+                <span class="feature-label">Dammaanad</span>
+                <span class="feature-value">1 Sano oo Tayo ah</span>
+            </div>
+            <div class="feature-item">
+                <i class="fa-solid fa-tags feature-icon"></i>
+                <span class="feature-label">Qaybta</span>
+                <span class="feature-value">{{ productdetail.category.name }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Subtle parallax effect on image hover
+    const imageWrapper = document.querySelector('.main-image-wrapper');
+    const image = document.querySelector('.main-image');
+
+    if (imageWrapper && image) {
+        imageWrapper.addEventListener('mousemove', (e) => {
+            const { left, top, width, height } = imageWrapper.getBoundingClientRect();
+            const x = (e.clientX - left) / width - 0.5;
+            const y = (e.clientY - top) / height - 0.5;
+            
+            image.style.transform = `scale(1.1) translate(${x * 20}px, ${y * 20}px)`;
+        });
+
+        imageWrapper.addEventListener('mouseleave', () => {
+            image.style.transform = 'scale(1) translate(0, 0)';
+        });
+    }
+</script>
+{% endblock %}
+ 

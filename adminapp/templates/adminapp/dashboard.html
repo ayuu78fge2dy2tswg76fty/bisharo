@@ -1,0 +1,146 @@
+{% extends 'adminapp/base.html' %}
+
+{% block title %}Software Overview | Gado Admin{% endblock %}
+{% block page_title %}Overview & Analytics{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        padding: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card::after {
+        content: '';
+        position: absolute;
+        right: -10px; bottom: -10px;
+        font-size: 5rem;
+        opacity: 0.03;
+        font-family: "Font Awesome 6 Free";
+        font-weight: 900;
+    }
+
+    .stat-card.users::after { content: '\f0c0'; }
+    .stat-card.products::after { content: '\f07a'; }
+    .stat-card.orders::after { content: '\f48b'; }
+    .stat-card.pending::after { content: '\f017'; }
+
+    .stat-icon {
+        width: 60px; height: 60px;
+        border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.5rem;
+        flex-shrink: 0;
+    }
+
+    .stat-details .stat-label { color: var(--text-muted); font-size: 0.85rem; font-weight: 700; display: block; margin-bottom: 4px; }
+    .stat-details .stat-value { font-size: 1.75rem; font-weight: 800; color: var(--text-main); line-height: 1; }
+
+    /* Table Improvements */
+    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+    .section-title { font-size: 1.1rem; font-weight: 800; display: flex; align-items: center; gap: 10px; }
+    
+    .data-table-wrapper { overflow-x: auto; }
+    .data-table { width: 100%; border-collapse: collapse; }
+    .data-table th { text-align: left; padding: 12px 16px; font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; border-bottom: 1px solid var(--border-color); }
+    .data-table td { padding: 16px; font-size: 0.9rem; border-bottom: 1px solid var(--border-color); color: var(--text-main); }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:hover { background: var(--bg-body); }
+
+    .badge { padding: 6px 12px; border-radius: 50px; font-size: 0.75rem; font-weight: 800; text-transform: capitalize; }
+    .badge-pending { background: #fffbeb; color: #d97706; }
+    .badge-delivered { background: #f0fdf4; color: #16a34a; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="stats-grid">
+    <div class="card stat-card users">
+        <div class="stat-icon" style="background: rgba(79, 70, 229, 0.1); color: var(--primary);"><i class="fa-solid fa-users"></i></div>
+        <div class="stat-details">
+            <span class="stat-label">Total Users</span>
+            <span class="stat-value">{{ stats.total_users }}</span>
+        </div>
+    </div>
+    <div class="card stat-card products">
+        <div class="stat-icon" style="background: rgba(16, 185, 129, 0.1); color: #10b981;"><i class="fa-solid fa-boxes-stacked"></i></div>
+        <div class="stat-details">
+            <span class="stat-label">Total Products</span>
+            <span class="stat-value">{{ stats.total_products }}</span>
+        </div>
+    </div>
+    <div class="card stat-card orders">
+        <div class="stat-icon" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;"><i class="fa-solid fa-cart-shopping"></i></div>
+        <div class="stat-details">
+            <span class="stat-label">Total Orders</span>
+            <span class="stat-value">{{ stats.total_orders }}</span>
+        </div>
+    </div>
+    <div class="card stat-card pending">
+        <div class="stat-icon" style="background: rgba(239, 68, 68, 0.1); color: #ef4444;"><i class="fa-solid fa-clock-rotate-left"></i></div>
+        <div class="stat-details">
+            <span class="stat-label">Pending</span>
+            <span class="stat-value">{{ stats.pending_orders }}</span>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="section-header">
+        <h3 class="section-title"><i class="fa-solid fa-bolt" style="color: var(--primary);"></i> Recent Orders</h3>
+        <a href="{% url 'admin_order_list' %}" class="btn" style="padding: 8px 16px; background: var(--bg-body); color: var(--text-muted); font-size: 0.8rem;">View History</a>
+    </div>
+    
+    <div class="data-table-wrapper">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Invoice</th>
+                    <th>Customer</th>
+                    <th>Date</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th style="text-align: right;">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in recent_orders %}
+                <tr>
+                    <td style="font-weight: 800; color: var(--primary);">#ORD-{{ order.id }}</td>
+                    <td style="font-weight: 600;">{{ order.user.name }}</td>
+                    <td style="color: var(--text-muted);">{{ order.order_date|date:"d M, Y" }}</td>
+                    <td style="font-weight: 800;">${{ order.total_price }}</td>
+                    <td>
+                        <span class="badge {% if order.status == 'delivered' %}badge-delivered{% else %}badge-pending{% endif %}">
+                            {{ order.status }}
+                        </span>
+                    </td>
+                    <td style="text-align: right;">
+                        <a href="{% url 'admin_order_list' %}" class="btn" style="background: var(--bg-body); padding: 5px 12px; font-size: 0.75rem;"><i class="fa-solid fa-eye"></i></a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 3rem; color: var(--text-light);">
+                        <i class="fa-solid fa-folder-open" style="display: block; font-size: 2rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                        No orders recorded yet.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

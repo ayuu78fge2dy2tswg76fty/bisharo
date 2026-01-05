@@ -1,0 +1,200 @@
+{% extends 'usersapp/base.html' %}
+
+{% block title %}Dashboard | {{ user.username }}{% endblock %}
+
+{% block page_title %}Dashboard Overview{% endblock %}
+
+{% block extra_head %}
+<style>
+    .welcome-card {
+        background: linear-gradient(135deg, var(--primary), #818cf8);
+        color: white;
+        padding: 2.5rem;
+        border-radius: var(--radius-lg);
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .welcome-card::after {
+        content: '\f135';
+        font-family: 'Font Awesome 6 Free';
+        font-weight: 900;
+        position: absolute;
+        right: -20px;
+        bottom: -20px;
+        font-size: 15rem;
+        opacity: 0.1;
+        transform: rotate(-15deg);
+    }
+
+    .welcome-card h1 {
+        font-size: 2rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+    }
+
+    .welcome-card p {
+        opacity: 0.9;
+        font-size: 1.1rem;
+        max-width: 600px;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: var(--radius-md);
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid #f1f5f9;
+        transition: var(--transition);
+    }
+
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .stat-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: var(--radius-md);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+
+    .icon-blue { background: #eff6ff; color: #3b82f6; }
+    .icon-green { background: #ecfdf5; color: #10b981; }
+    .icon-purple { background: #faf5ff; color: #a855f7; }
+
+    .stat-info h3 {
+        font-size: 0.875rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-info .value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-main);
+    }
+
+    .quick-actions {
+        display: grid;
+        grid-template_columns: 1fr 1fr;
+        gap: 1.5rem;
+    }
+
+    .action-card {
+        background: white;
+        border-radius: var(--radius-lg);
+        padding: 2rem;
+        text-align: center;
+        border: 1px solid #f1f5f9;
+        box-shadow: var(--shadow-sm);
+    }
+
+    @media (max-width: 768px) {
+        .welcome-card { padding: 1.5rem; }
+        .welcome-card h1 { font-size: 1.5rem; }
+        .quick-actions { grid-template-columns: 1fr; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="welcome-card">
+    <h1>Ku soo dhowoow, {{ user.username }}!</h1>
+    <p>Kani waa dashboard-kaaga rasmiga ah. Waxaad halkan ka maamuli kartaa dalabaadkaaga iyo xogtaada gaarka ah si fudud oo degdeg ah.</p>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon icon-blue">
+            <i class="fa-solid fa-wallet"></i>
+        </div>
+        <div class="stat-info">
+            <h3>Total Spent</h3>
+            <div class="value">${{ total_spent }}</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon icon-green">
+            <i class="fa-solid fa-bag-shopping"></i>
+        </div>
+        <div class="stat-info">
+            <h3>Active Orders</h3>
+            <div class="value">{{ active_orders_count }}</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon icon-purple">
+            <i class="fa-solid fa-box"></i>
+        </div>
+        <div class="stat-info">
+            <h3>Items Bought</h3>
+            <div class="value">{{ total_items_bought }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="content-card" style="margin-bottom: 2rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <h3 style="font-weight: 700;">Recent Activity</h3>
+        <a href="{% url 'order_v' %}" style="color: var(--primary); text-decoration: none; font-size: 0.875rem; font-weight: 600;">View All Activity</a>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 1rem;">
+        {% for activity in recent_activity %}
+        <div style="background: white; padding: 1rem 1.5rem; border-radius: 12px; border: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; transition: var(--transition);">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <div style="width: 40px; height: 40px; border-radius: 10px; background: #f8fafc; display: flex; align-items: center; justify-content: center; color: var(--primary);">
+                    <i class="fa-solid fa-cart-shopping"></i>
+                </div>
+                <div>
+                    <div style="font-weight: 700; color: var(--text-main); font-size: 0.9375rem;">Placed order for {{ activity.product.name }}</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">{{ activity.order_date|timesince }} ago • #ORD-{{ activity.id }}</div>
+                </div>
+            </div>
+            <div class="status-badge status-{{ activity.status }}" style="transform: scale(0.9);">
+                {{ activity.get_status_display }}
+            </div>
+        </div>
+        {% empty %}
+        <div style="padding: 2rem; text-align: center; background: #f8fafc; border-radius: var(--radius-md); border: 2px dashed #e2e8f0;">
+            <i class="fa-solid fa-clock-rotate-left" style="font-size: 2rem; color: #cbd5e1; margin-bottom: 1rem;"></i>
+            <p style="color: var(--text-muted);">Wax dhaqdhaqaaq cusub ah ma jiraan hadda.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="quick-actions">
+    <div class="action-card">
+        <i class="fa-solid fa-shopping-cart" style="font-size: 2.5rem; color: var(--primary); margin-bottom: 1.5rem;"></i>
+        <h3 style="margin-bottom: 0.5rem; font-weight: 700;">Ready to Shop?</h3>
+        <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Explore our latest products and exclusive deals tailor-made for you.</p>
+        <a href="{% url 'product_list' %}" class="btn-primary">Browse Marketplace</a>
+    </div>
+    <div class="action-card">
+        <i class="fa-solid fa-user-shield" style="font-size: 2.5rem; color: #10b981; margin-bottom: 1.5rem;"></i>
+        <h3 style="margin-bottom: 0.5rem; font-weight: 700;">Account Safety</h3>
+        <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Keep your profile up to date and your account secure with regular updates.</p>
+        <a href="{% url 'user_profile' %}" class="btn-primary" style="background-color: #10b981;">Manage Profile</a>
+    </div>
+</div>
+{% endblock %}

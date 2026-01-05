@@ -1,0 +1,1112 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="so">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Gado Store{% endblock %}</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
+    <style>
+
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --bg-dark: #0f172a;
+            --white: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        html {
+            overflow-x: hidden;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            width: 100%;
+        }
+
+        /* Premium Header */
+        .premium-header {
+            background: linear-gradient(135deg, var(--bg-dark) 0%, #1e293b 100%); /* Original Solid Dark */
+            padding: 1.25rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed; /* Keep Fixed */
+            top: 0;
+            width: 100%;
+            z-index: 100;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2); /* Original Shadow */
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .premium-header.scrolled {
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.95) 100%);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding: 1rem 5%; /* Shrink slightly on scroll */
+        }
+
+        .logo {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: var(--white);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: var(--transition);
+        }
+
+        .logo:hover {
+            transform: translateY(-2px);
+        }
+
+        .logo i {
+            background: linear-gradient(135deg, var(--primary), #818cf8);
+            padding: 10px;
+            border-radius: 12px;
+            font-size: 1.5rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo img {
+            height: 40px;
+            width: auto;
+            border-radius: 12px;
+        }
+
+        .logo span {
+            background: linear-gradient(135deg, var(--primary), #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2.5rem;
+            list-style: none;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: #94a3b8;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: var(--transition);
+            position: relative;
+            padding: 8px 0;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary), #818cf8);
+            transition: var(--transition);
+        }
+
+        .nav-links a:hover::after,
+        .nav-links a.active::after {
+            width: 100%;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: var(--white);
+        }
+
+        .user-menu {
+            position: relative;
+        }
+
+        .avatar-btn {
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.2), rgba(129, 140, 248, 0.2));
+            color: var(--white);
+            border: 2px solid rgba(79, 70, 229, 0.3);
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: var(--transition);
+        }
+
+        .avatar-btn:hover {
+            background: linear-gradient(135deg, var(--primary), #818cf8);
+            transform: scale(1.1);
+            box-shadow: 0 8px 20px rgba(79, 70, 229, 0.4);
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 65px;
+            right: 0;
+            background: var(--white);
+            width: 220px;
+            border-radius: 16px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+            padding: 0.75rem;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: var(--transition);
+        }
+
+        .dropdown-menu.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 18px;
+            color: var(--text-main);
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .dropdown-item:hover {
+            background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+            color: var(--primary);
+            transform: translateX(5px);
+        }
+
+        .dropdown-item i {
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Mobile Menu Toggle */
+        .mobile-menu-btn {
+            display: none;
+            background: transparent;
+            border: none;
+            color: var(--white);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                position: fixed;
+                top: 80px;
+                right: -100%;
+                flex-direction: column;
+                background: var(--bg-dark);
+                width: 250px;
+                padding: 2rem;
+                gap: 1.5rem;
+                transition: var(--transition);
+                box-shadow: -10px 0 30px rgba(0,0,0,0.3);
+                height: calc(100vh - 80px);
+            }
+
+            .nav-links.active {
+                right: 0;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+            }
+        }
+
+        /* Premium Footer */
+        .premium-footer {
+            background: linear-gradient(135deg, var(--bg-dark) 0%, #1e293b 100%);
+            color: white;
+            padding: 4rem 5% 2rem;
+            margin-top: 4rem;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1.5fr;
+            gap: 3rem;
+            margin-bottom: 3rem;
+        }
+
+        .footer-section h3 {
+            font-size: 1.25rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, var(--primary), #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .footer-about p {
+            color: #94a3b8;
+            line-height: 1.8;
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+        }
+
+        .footer-logo {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .footer-logo i {
+            background: linear-gradient(135deg, var(--primary), #818cf8);
+            padding: 8px;
+            border-radius: 10px;
+            font-size: 1.5rem;
+        }
+
+        .footer-logo span {
+            background: linear-gradient(135deg, var(--primary), #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .footer-links {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 0.75rem;
+        }
+
+        .footer-links a {
+            color: #94a3b8;
+            text-decoration: none;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.95rem;
+        }
+
+        .footer-links a:hover {
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .footer-links a i {
+            font-size: 0.8rem;
+            color: var(--primary);
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: start;
+            gap: 12px;
+            margin-bottom: 1.25rem;
+            color: #94a3b8;
+            font-size: 0.95rem;
+        }
+
+        .contact-item i {
+            width: 40px;
+            height: 40px;
+            background: rgba(79, 70, 229, 0.2);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            flex-shrink: 0;
+        }
+
+        .social-links-footer {
+            display: flex;
+            gap: 12px;
+            margin-top: 1.5rem;
+        }
+
+        .social-link-footer {
+            width: 45px;
+            height: 45px;
+            background: rgba(79, 70, 229, 0.2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 1.1rem;
+            transition: var(--transition);
+            text-decoration: none;
+        }
+
+        .social-link-footer:hover {
+            background: linear-gradient(135deg, var(--primary), #818cf8);
+            color: white;
+            transform: translateY(-5px);
+        }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 2rem;
+            text-align: center;
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        .footer-bottom p {
+            margin: 0;
+        }
+
+        .footer-bottom a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .footer-bottom a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 968px) {
+            .footer-content {
+                grid-template-columns: 1fr 1fr;
+                gap: 2rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .footer-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* --- Login Modal Overlay --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            display: flex;
+            align-items: flex-start; /* allows scrolling if tall */
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
+            overflow-y: auto; /* Enable scrolling */
+            padding: 2rem 1rem; /* Spacing */
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* --- Auth Card --- */
+        .auth-card {
+            background: var(--white);
+            padding: 2.5rem;
+            border-radius: 24px;
+            width: 100%;
+            max-width: 420px;
+            position: relative;
+            transform: scale(0.9);
+            transition: var(--transition);
+            margin: auto; /* Vertically center if short, scroll if tall */
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+        }
+
+/* ... existing styles ... */
+
+        .modal-overlay.active .auth-card {
+            transform: scale(1);
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: transparent;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+
+        .auth-logo {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, var(--primary), #818cf8);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            margin: 0 auto 1.5rem;
+        }
+
+        .auth-title {
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+        }
+
+        .auth-subtitle {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Inputs & Buttons */
+        .input-group { margin-bottom: 1.25rem; }
+        
+        .input-group label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--text-main);
+        }
+
+        .input-wrapper { position: relative; }
+        
+        .input-wrapper i {
+            position: absolute;
+            left: 1.25rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        .auth-input {
+            width: 100%;
+            padding: 0.9rem 1rem 0.9rem 3rem;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            background: #f8fafc;
+            font-size: 0.95rem;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .auth-input:focus {
+            border-color: var(--primary);
+            background: white;
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+        }
+
+        .btn-auth {
+            width: 100%;
+            padding: 1rem;
+            border: none;
+            border-radius: 12px;
+            background: var(--primary);
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-top: 1rem;
+            transition: var(--transition);
+        }
+
+        .btn-auth:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+        }
+        
+        .btn-admin { background: #0f172a; }
+        .btn-admin:hover { background: #1e293b; }
+
+        /* Form Visibility Toggle */
+        .form-container { display: none; animation: fadeIn 0.3s ease; }
+        .form-container.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        {% block extra_styles %}{% endblock %}
+    </style>
+</head>
+<body>
+    <!-- Premium Header -->
+    <header class="premium-header">
+        <a href="{% url 'user_login' %}" class="logo">
+            <img src="{% static 'images/logo.png' %}" alt="Gado Logo">
+            Gado<span>Store</span>
+        </a>
+
+        <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+
+        <ul class="nav-links" id="navLinks">
+            <li><a href="{% url 'user_login' %}" class="{% if request.resolver_match.url_name == 'user_login' %}active{% endif %}">Home</a></li>
+            <li><a href="{% url 'about' %}" class="{% if request.resolver_match.url_name == 'about' %}active{% endif %}">About</a></li>
+            <li><a href="{% url 'contact' %}" class="{% if request.resolver_match.url_name == 'contact' %}active{% endif %}">Contact</a></li>
+            <li><a href="{% url 'products' %}" class="{% if request.resolver_match.url_name == 'products' %}active{% endif %}">products</a></li>
+        </ul>
+
+        <div class="user-menu">
+            <button class="avatar-btn" onclick="toggleDropdown()">
+                <i class="fa-regular fa-user"></i>
+            </button>
+            <div class="dropdown-menu" id="dropdown">
+                <div class="dropdown-item" onclick="openModal('user')">
+                    <i class="fa-solid fa-user-check"></i> Login User
+                </div>
+                <div class="dropdown-item" onclick="openModal('admin')">
+                    <i class="fa-solid fa-shield-halved"></i> Login Admin
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    {% block content %}{% endblock %}
+
+    <!-- Premium Footer -->
+    <footer class="premium-footer">
+        <div class="footer-content">
+            <!-- About Section -->
+            <div class="footer-section footer-about">
+                <div class="footer-logo">
+                    <img src="{% static 'images/logo.png' %}" alt="Gado Logo" style="height: 45px; width: auto; border-radius: 10px;">
+                    Gado<span>Store</span>
+                </div>
+                <p>Gado Store waa goobta ugu casrisan ee aad ka heli karto adeegyada ganacsiga online-ka ah. Waxaan ku siinaa adeeg heer sare ah oo aad ku kalsoon tahay.</p>
+                <div class="social-links-footer">
+                    <a href="#" class="social-link-footer" title="Facebook">
+                        <i class="fa-brands fa-facebook-f"></i>
+                    </a>
+                    <a href="#" class="social-link-footer" title="Twitter">
+                        <i class="fa-brands fa-twitter"></i>
+                    </a>
+                    <a href="#" class="social-link-footer" title="Instagram">
+                        <i class="fa-brands fa-instagram"></i>
+                    </a>
+                    <a href="#" class="social-link-footer" title="WhatsApp">
+                        <i class="fa-brands fa-whatsapp"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Quick Links -->
+            <div class="footer-section">
+                <h3>Xiriiriyeyaal Degdeg ah</h3>
+                <ul class="footer-links">
+                    <li><a href="{% url 'user_login' %}"><i class="fa-solid fa-angle-right"></i> home</a></li>
+                    <li><a href="{% url 'about' %}"><i class="fa-solid fa-angle-right"></i> About</a></li>
+                    <li><a href="{% url 'contact' %}"><i class="fa-solid fa-angle-right"></i> Contact</a></li>
+             
+                </ul>
+            </div>
+
+            <!-- Support -->
+            <div class="footer-section">
+                <h3>Taageero</h3>
+                <ul class="footer-links">
+                    <li><a href="#"><i class="fa-solid fa-angle-right"></i> Su'aalaha Inta Badan</a></li>
+                    <li><a href="#"><i class="fa-solid fa-angle-right"></i> Privacy Policy</a></li>
+                    <li><a href="{% url 'contact' %}"><i class="fa-solid fa-angle-right"></i> Contect</a></li>
+                </ul>
+            </div>
+
+            <!-- Contact Info -->
+            <div class="footer-section">
+                <h3>Xiriirka</h3>
+                <div class="contact-item">
+                    <i class="fa-solid fa-location-dot"></i>
+                    <div>
+                        <strong>Cinwaanka:</strong><br>
+                        galkacyo<br>
+                        Puntiland, Soomaaliya
+                    </div>
+                </div>
+                <div class="contact-item">
+                    <i class="fa-solid fa-phone"></i>
+                    <div>
+                        <strong>Telefoonka:</strong><br>
+                        +252 907525744
+                    </div>
+                </div>
+                <div class="contact-item">
+                    <i class="fa-solid fa-envelope"></i>
+                    <div>
+                        <strong>Email:</strong><br>
+                        ayubsicid@mail.com
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>&copy; 2026 <a href="{% url 'user_login' %}">Gado Store</a>. Dhammaan xuquuqda way dhawran yihiin. | Designed with <i class="fa-solid fa-heart" style="color: #ef4444;"></i> by Gado Team</p>
+        </div>
+    </footer>
+
+    <!-- Product View Modal -->
+    <div class="modal-overlay" id="productModal" style="display: none;">
+        <div class="auth-card" style="max-width: 600px;">
+            <button class="close-modal" onclick="closeProductModal()">&times;</button>
+            <img id="productImage" src="" style="width: 100%; height: 300px; object-fit: cover; border-radius: 16px; margin-bottom: 1.5rem;">
+            <h2 id="productTitle" style="font-size: 1.75rem; font-weight: 800; margin-bottom: 0.5rem;"></h2>
+            <p id="productPrice" style="font-size: 2rem; font-weight: 800; color: #4f46e5; margin-bottom: 1rem;"></p>
+            <p id="productDescription" style="color: #64748b; line-height: 1.6; margin-bottom: 1.5rem;"></p>
+            <button onclick="showLoginPrompt(); closeProductModal();" class="btn-auth" style="width: 100%; background: linear-gradient(135deg, #4f46e5, #7c3aed);">
+                <i class="fa-solid fa-cart-shopping"></i> Order Now
+            </button>
+        </div>
+    </div>
+
+    <!-- Login Prompt Modal -->
+    <div class="modal-overlay" id="loginPromptModal" style="display: none;">
+        <div class="auth-card" style="max-width: 400px; text-align: center;">
+            <button class="close-modal" onclick="closeLoginPrompt()">&times;</button>
+            <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #fef3c7, #fde68a); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; font-size: 2.5rem; color: #f59e0b;">
+                <i class="fa-solid fa-lock"></i>
+            </div>
+            <h2 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 1rem;">Login Required</h2>
+            <p style="color: #64748b; margin-bottom: 2rem;">Si aad u dalbasho alaabtan, gal akoonkaaga ama akon samayso</p>
+            <div style="display: flex; gap: 12px;">
+                <button onclick="openModal('user'); closeLoginPrompt();" class="btn-auth" style="flex: 1; background: linear-gradient(135deg, #4f46e5, #7c3aed);">
+                    Login
+                </button>
+                <button onclick="openModal('register'); closeLoginPrompt();" class="btn-auth" style="flex: 1; background: white; color: #4f46e5; border: 2px solid #4f46e5;">
+                    Register
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Login Modal -->
+    <div class="modal-overlay" id="loginModal">
+        <div class="auth-card">
+            <button class="close-modal" onclick="closeModal()">&times;</button>
+            
+            <div class="auth-logo">
+                <i class="fa-solid fa-bolt-lightning"></i>
+            </div>
+            
+            {% if messages %}
+                {% for message in messages %}
+                <div style="background: {% if message.tags == 'error' %}#fee2e2{% else %}#ecfdf5{% endif %}; color: {% if message.tags == 'error' %}#dc2626{% else %}#059669{% endif %}; padding: 12px; border-radius: 10px; margin-bottom: 1.5rem; text-align: center; font-size: 0.9rem; font-weight: 600; border: 1px solid {% if message.tags == 'error' %}#fecaca{% else %}#d1fae5{% endif %};">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            {% endif %}
+
+            {% if error %}
+            <div style="background: #fee2e2; color: #dc2626; padding: 12px; border-radius: 10px; margin-bottom: 1.5rem; text-align: center; font-size: 0.9rem; font-weight: 600; border: 1px solid #fecaca;">
+                <i class="fa-solid fa-circle-exclamation" style="margin-right: 5px;"></i>
+                {{ error }}
+            </div>
+            <script>
+                // Auto-open modal if there's an error
+                document.addEventListener('DOMContentLoaded', () => {
+                    const modal = document.getElementById('loginModal');
+                    const userForm = document.getElementById('userForm');
+                    modal.classList.add('active');
+                    userForm.classList.add('active'); // Default to showing user form
+                });
+            </script>
+            {% endif %}
+
+            <div id="userForm" class="form-container">
+                <h2 class="auth-title">User Login</h2>
+                <p class="auth-subtitle">Geli xogtaada macmiilnimo</p>
+                
+                <form method="POST" action="{% url 'user_login' %}">
+                    {% csrf_token %}
+                    <div class="input-group">
+                        <label>Username</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-user-tag"></i>
+                            <input type="text" name="username" class="auth-input" placeholder="Magacaaga macmiil" required>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>Password</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-lock"></i>
+                            <input type="password" name="password" class="auth-input" placeholder="Furaha sirta ah" required>
+                        </div>
+                        <div style="text-align: right; margin-top: 0.5rem;">
+                            <a href="#" onclick="openForgotPasswordModal(); return false;" style="color: var(--primary); font-size: 0.85rem; font-weight: 600; text-decoration: none;">
+                                <i class="fa-solid fa-key"></i> Forgot Password?
+                            </a>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-auth">Gal User ahaan</button>
+                </form>
+                <div style="text-align: center; margin-top: 1.5rem; font-size: 0.9rem; color: #64748b;">
+                    Ma haysatid account? <a href="#" onclick="switchForm('register'); return false;" style="color: #4f46e5; font-weight: 600;">Is-diiwaan geli</a>
+                </div>
+            </div>
+
+            <div id="registerForm" class="form-container">
+                <h2 class="auth-title">Register</h2>
+                <p class="auth-subtitle">Samayso account cusub</p>
+                
+                <form action="{% url 'user_register' %}" method="POST">
+                    {% csrf_token %}
+                    <div class="input-group">
+                        <label>Name</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-user"></i>
+                            <input type="text" name="name" class="auth-input" placeholder="Magacaaga oo buuxa" required>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>Username</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-at"></i>
+                            <input type="text" name="username" class="auth-input" placeholder="Dooro username" required>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>Email</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-envelope"></i>
+                            <input type="email" name="email" class="auth-input" placeholder="Email-kaaga" required>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>Password</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-lock"></i>
+                            <input type="password" name="password" class="auth-input" placeholder="Dooro password adag" required>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>Gender</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-venus-mars"></i>
+                            <select name="gender" class="auth-input" required>
+                                <option value="" disabled selected>Dooro Jinsigaaga</option>
+                                <option value="Male">Lab</option>
+                                <option value="Female">Dhedig</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-auth">Diiwaan Geli</button>
+                </form>
+                <div style="text-align: center; margin-top: 1.5rem; font-size: 0.9rem; color: #64748b;">
+                    Hadaad account leedahay? <a href="#" onclick="switchForm('login'); return false;" style="color: #4f46e5; font-weight: 600;">Gal halkan</a>
+                </div>
+            </div>
+
+            <div id="adminForm" class="form-container">
+                <h2 class="auth-title">Admin Login</h2>
+                <p class="auth-subtitle">Geli xogta maamulnimo</p>
+
+                <form method="POST" action="{% url 'user_login' %}">
+                    {% csrf_token %}
+                    <div class="input-group">
+                        <label>Admin Username</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-user-shield"></i>
+                            <input type="text" name="username" class="auth-input" placeholder="Magaca Admin-ka" required>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>Password</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-key"></i>
+                            <input type="password" name="password" class="auth-input" placeholder="Furaha Admin-ka" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-auth btn-admin">Gal Admin ahaan</button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Forgot Password Modal -->
+    <div class="modal-overlay" id="forgotPasswordModal">
+        <div class="auth-card" style="max-width: 450px;">
+            <button class="close-modal" onclick="closeForgotPasswordModal()">&times;</button>
+            
+            <div class="auth-logo" style="background: linear-gradient(135deg, #f59e0b, #f97316);">
+                <i class="fa-solid fa-key"></i>
+            </div>
+            
+            <h2 class="auth-title">Forgot Password?</h2>
+            <p class="auth-subtitle">Geli email-kaaga si aad u hesho password-kaaga</p>
+            
+            <div class="input-group">
+                <label>Email Address</label>
+                <div class="input-wrapper">
+                    <i class="fa-solid fa-envelope"></i>
+                    <input type="email" id="forgotEmailInput" class="auth-input" placeholder="Geli email-kaaga" required>
+                </div>
+            </div>
+
+            <button onclick="handleForgotPassword()" class="btn-auth" style="background: linear-gradient(135deg, #f59e0b, #f97316);">
+                <i class="fa-solid fa-search"></i> Raadi Password
+            </button>
+
+            <div id="forgotResult" style="margin-top: 1.5rem; display: none;"></div>
+
+            <div style="text-align: center; margin-top: 1.5rem; font-size: 0.9rem; color: #64748b;">
+                <a href="#" onclick="closeForgotPasswordModal(); openModal('user'); return false;" style="color: #4f46e5; font-weight: 600;">
+                    <i class="fa-solid fa-arrow-left"></i> Ku noqo Login
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleDropdown() {
+            const dropdown = document.getElementById('dropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        function toggleMobileMenu() {
+            const navLinks = document.getElementById('navLinks');
+            navLinks.classList.toggle('active');
+        }
+
+        function toggleDropdown() {
+            const dropdown = document.getElementById('dropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        function viewProduct(btn) {
+            const modal = document.getElementById('productModal');
+            const img = document.getElementById('productImage');
+            const title = document.getElementById('productTitle');
+            const price = document.getElementById('productPrice');
+            const desc = document.getElementById('productDescription');
+
+            img.src = btn.dataset.image;
+            title.textContent = btn.dataset.title;
+            price.textContent = '$' + btn.dataset.price;
+            desc.textContent = btn.dataset.desc || 'No description available.';
+
+            modal.style.display = 'flex';
+            setTimeout(() => {
+                modal.classList.add('active');
+            }, 10);
+        }
+
+        function closeProductModal() {
+            const modal = document.getElementById('productModal');
+            modal.classList.remove('active');
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 300);
+        }
+
+        function showLoginPrompt() {
+            const modal = document.getElementById('loginPromptModal');
+            modal.style.display = 'flex';
+            setTimeout(() => {
+                modal.classList.add('active');
+            }, 10);
+        }
+
+        function closeLoginPrompt() {
+            const modal = document.getElementById('loginPromptModal');
+            modal.classList.remove('active');
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 300);
+        }
+
+        function openModal(type) {
+            const modal = document.getElementById('loginModal');
+            const userForm = document.getElementById('userForm');
+            const adminForm = document.getElementById('adminForm');
+
+            // Show Modal
+            modal.classList.add('active');
+
+            // Toggle Forms based on type
+            if (type === 'user') {
+                userForm.classList.add('active');
+                adminForm.classList.remove('active');
+                document.getElementById('registerForm').classList.remove('active');
+            } else if (type === 'admin') {
+                adminForm.classList.add('active');
+                userForm.classList.remove('active');
+                document.getElementById('registerForm').classList.remove('active');
+            } else if (type === 'register') {
+                document.getElementById('registerForm').classList.add('active');
+                userForm.classList.remove('active');
+                adminForm.classList.remove('active');
+            }
+        }
+
+        function switchForm(target) {
+            const userForm = document.getElementById('userForm');
+            const registerForm = document.getElementById('registerForm');
+            
+            if (target === 'register') {
+                userForm.classList.remove('active');
+                registerForm.classList.add('active');
+            } else {
+                registerForm.classList.remove('active');
+                userForm.classList.add('active');
+            }
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('loginModal');
+            modal.classList.remove('active');
+        }
+
+        // Forgot Password Modal Functions
+        function openForgotPasswordModal() {
+            document.getElementById('forgotPasswordModal').classList.add('active');
+            document.getElementById('forgotEmailInput').value = '';
+            document.getElementById('forgotResult').style.display = 'none';
+        }
+
+        function closeForgotPasswordModal() {
+            document.getElementById('forgotPasswordModal').classList.remove('active');
+        }
+
+        async function handleForgotPassword() {
+            const email = document.getElementById('forgotEmailInput').value;
+            const resultDiv = document.getElementById('forgotResult');
+            
+            if (!email) {
+                resultDiv.innerHTML = '<div style="background: #fee2e2; color: #dc2626; padding: 1rem; border-radius: 10px; text-align: center;"><i class="fa-solid fa-circle-exclamation"></i> Fadlan geli email-kaaga</div>';
+                resultDiv.style.display = 'block';
+                return;
+            }
+
+            try {
+                const response = await fetch('/forgot-password/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
+                    body: `email=${encodeURIComponent(email)}`
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <div style="background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); padding: 1.5rem; border-radius: 14px; text-align: center; border: 2px solid #059669;">
+                            <i class="fa-solid fa-circle-check" style="font-size: 2.5rem; color: #059669; margin-bottom: 1rem;"></i>
+                            <h3 style="color: #065f46; font-weight: 800; margin-bottom: 0.75rem;">Password Found!</h3>
+                            <p style="color: #047857; margin-bottom: 1rem;">Furaha sirta ah ee account-kaaga waa:</p>
+                            <div style="background: white; padding: 1rem 1.5rem; border-radius: 10px; border: 2px dashed #059669; margin-bottom: 1rem;">
+                                <span style="font-size: 1.5rem; font-weight: 800; color: #059669; letter-spacing: 2px;">${data.password}</span>
+                            </div>
+                            <p style="font-size: 0.85rem; color: #065f46;"><i class="fa-solid fa-info-circle"></i> Fadlan ku keydi meel ammaan ah</p>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div style="background: #fee2e2; color: #dc2626; padding: 1.25rem; border-radius: 12px; text-align: center; border: 2px solid #fecaca;">
+                            <i class="fa-solid fa-circle-xmark" style="font-size: 2rem; margin-bottom: 0.5rem;"></i>
+                            <p style="font-weight: 700; margin: 0;">Emailkan majiro</p>
+                            <p style="font-size: 0.85rem; margin-top: 0.5rem; opacity: 0.9;">Email-kan lama diiwaan gelin. Fadlan hubi email-ka ama samayso account cusub.</p>
+                        </div>
+                    `;
+                }
+                resultDiv.style.display = 'block';
+            } catch (error) {
+                resultDiv.innerHTML = '<div style="background: #fee2e2; color: #dc2626; padding: 1rem; border-radius: 10px; text-align: center;"><i class="fa-solid fa-circle-exclamation"></i> Khalad ayaa dhacay. Fadlan isku day markale.</div>';
+                resultDiv.style.display = 'block';
+            }
+        }
+
+        // Header Scroll Effect
+        window.addEventListener('scroll', function() {
+            const header = document.querySelector('.premium-header');
+            if (window.scrollY > 50) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+
+        // Auto-open register if needed
+        {% if show_register %}
+        document.addEventListener('DOMContentLoaded', () => {
+            openModal('register');
+        });
+        {% endif %}
+
+        // Close dropdown and modals when clicking outside
+        window.onclick = function(event) {
+            // Dropdown
+            if (!event.target.matches('.avatar-btn') && !event.target.matches('.avatar-btn i')) {
+                var dropdowns = document.getElementsByClassName("dropdown-menu");
+                for (var i = 0; i < dropdowns.length; i++) {
+                    var openDropdown = dropdowns[i];
+                    if (openDropdown.classList.contains('show')) {
+                        openDropdown.classList.remove('show');
+                    }
+                }
+            }
+
+            // Modals - Close when clicking the overlay (background)
+            if (event.target.classList.contains('modal-overlay')) {
+                if (event.target.id === 'productModal') closeProductModal();
+                else if (event.target.id === 'loginPromptModal') closeLoginPrompt();
+                else if (event.target.id === 'loginModal') closeModal();
+                else if (event.target.id === 'forgotPasswordModal') closeForgotPasswordModal();
+            }
+        }
+
+        {% block extra_scripts %}{% endblock %}
+    </script>
+</body>
+</html>

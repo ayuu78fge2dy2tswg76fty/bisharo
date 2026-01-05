@@ -1,0 +1,215 @@
+{% extends 'usersapp/base.html' %}
+
+{% block title %}My Cart | Gado Store{% endblock %}
+
+{% block page_title %}Your Shopping Cart{% endblock %}
+
+{% block extra_head %}
+<style>
+    .cart-container {
+        display: grid;
+        grid-template-columns: 1fr 340px;
+        gap: 2rem;
+    }
+
+    .cart-items-list {
+        background: white;
+        border-radius: var(--radius-lg);
+        padding: 1.5rem;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid #f1f5f9;
+    }
+
+    .cart-item {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        padding: 1.25rem 0;
+        border-bottom: 1px solid #f1f5f9;
+        transition: var(--transition);
+    }
+
+    .cart-item:last-child { border-bottom: none; }
+
+    .cart-item-img {
+        width: 100px;
+        height: 100px;
+        border-radius: var(--radius-md);
+        object-fit: cover;
+        background: #f8fafc;
+    }
+
+    .cart-item-info { flex-grow: 1; }
+
+    .cart-item-title {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: var(--text-main);
+        margin-bottom: 0.25rem;
+    }
+
+    .cart-item-price {
+        font-weight: 700;
+        color: var(--primary);
+        font-size: 1rem;
+    }
+
+    .cart-item-actions {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .quantity-badge {
+        padding: 0.5rem 1rem;
+        background: #f1f5f9;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 0.875rem;
+        color: var(--text-main);
+    }
+
+    .btn-remove {
+        color: #ef4444;
+        background: #fef2f2;
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        transition: var(--transition);
+    }
+
+    .btn-remove:hover { background: #fee2e2; transform: scale(1.1); }
+
+    .cart-summary {
+        background: white;
+        border-radius: var(--radius-lg);
+        padding: 2rem;
+        box-shadow: var(--shadow-md);
+        border: 1px solid #f1f5f9;
+        height: fit-content;
+        position: sticky;
+        top: 90px;
+    }
+
+    .summary-title {
+        font-size: 1.25rem;
+        font-weight: 800;
+        margin-bottom: 1.5rem;
+        color: var(--text-main);
+    }
+
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+        font-size: 0.9375rem;
+        color: var(--text-muted);
+    }
+
+    .summary-total {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 2px dashed #e2e8f0;
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: var(--text-main);
+    }
+
+    @media (max-width: 992px) {
+        .cart-container { grid-template-columns: 1fr; }
+        .cart-summary { position: static; }
+    }
+
+    @media (max-width: 640px) {
+        .cart-item { flex-direction: column; align-items: flex-start; text-align: left; }
+        .cart-item-img { width: 100%; height: 200px; }
+        .cart-item-actions { width: 100%; justify-content: space-between; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+{% if cart_items %}
+<div class="cart-container">
+    <div class="cart-items-list">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h3 style="font-weight: 700;">Items ({{ cart_count }})</h3>
+            <a href="{% url 'clear_cart' %}" style="color: #64748b; font-size: 0.875rem; font-weight: 600; text-decoration: none;">Clear Cart</a>
+        </div>
+        
+        {% for item in cart_items %}
+        <div class="cart-item">
+            {% if item.product.image %}
+                <img src="{{ item.product.image.url }}" class="cart-item-img" alt="{{ item.product.name }}">
+            {% else %}
+                <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=800&auto=format&fit=crop" class="cart-item-img" alt="Placeholder">
+            {% endif %}
+            
+            <div class="cart-item-info">
+                <div class="cart-item-title">{{ item.product.name }}</div>
+                <div style="color: var(--text-muted); font-size: 0.875rem; margin-bottom: 0.5rem;">{{ item.product.category.name }}</div>
+                <div class="cart-item-price">${{ item.product.price }}</div>
+            </div>
+            
+            <div class="cart-item-actions">
+                <div class="quantity-badge">x {{ item.quantity }}</div>
+                <a href="{% url 'remove_from_cart' item.product.id %}" class="btn-remove" title="Remove item">
+                    <i class="fa-solid fa-trash-can"></i>
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="cart-summary">
+        <h3 class="summary-title">Order Summary</h3>
+        <div class="summary-row">
+            <span>Subtotal</span>
+            <span style="font-weight: 600; color: var(--text-main);">${{ total_cart_price }}</span>
+        </div>
+        <div class="summary-row">
+            <span>Shipping</span>
+            <span style="font-weight: 600; color: #10b981;">Free</span>
+        </div>
+        <div class="summary-row">
+            <span>Estimated Tax</span>
+            <span style="font-weight: 600; color: var(--text-main);">$0.00</span>
+        </div>
+        
+        <div class="summary-total">
+            <span>Total</span>
+            <span>${{ total_cart_price }}</span>
+        </div>
+        
+        <a href="{% url 'checkout_v' %}" class="btn-primary" style="width: 100%; justify-content: center; margin-top: 2rem; padding: 1rem;">
+            Proceed to Checkout
+            <i class="fa-solid fa-arrow-right"></i>
+        </a>
+        
+        <a href="{% url 'product_list' %}" style="display: block; text-align: center; margin-top: 1.5rem; color: var(--text-muted); text-decoration: none; font-size: 0.875rem; font-weight: 600;">
+            <i class="fa-solid fa-chevron-left" style="font-size: 0.75rem; margin-right: 0.5rem;"></i>
+            Continue Shopping
+        </a>
+    </div>
+</div>
+{% else %}
+<div class="content-card" style="text-align: center; padding: 8rem 2rem;">
+    <div style="width: 100px; height: 100px; background: #f8fafc; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
+        <i class="fa-solid fa-bag-shopping" style="font-size: 3rem; color: #cbd5e1;"></i>
+    </div>
+    <h2 style="font-weight: 800; color: var(--text-main); margin-bottom: 1rem;">Your cart is empty</h2>
+    <p style="color: var(--text-muted); margin-bottom: 2.5rem; max-width: 400px; margin-left: auto; margin-right: auto;">
+        It looks like you haven't added anything to your cart yet. Explore our marketplace to find something you love.
+    </p>
+    <a href="{% url 'product_list' %}" class="btn-primary">
+        Start Shopping
+    </a>
+</div>
+{% endif %}
+{% endblock %}

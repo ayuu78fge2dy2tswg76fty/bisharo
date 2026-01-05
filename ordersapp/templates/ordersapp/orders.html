@@ -1,0 +1,229 @@
+{% extends 'usersapp/base.html' %}
+
+{% block title %}My Orders | Gado History{% endblock %}
+
+{% block page_title %}Order Management{% endblock %}
+
+{% block extra_head %}
+<style>
+    .order-header-stats {
+        display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem;
+    }
+    .order-stat {
+        background: white; padding: 1.25rem; border-radius: var(--radius-md); display: flex; flex-direction: column; border: 1px solid #f1f5f9; box-shadow: var(--shadow-sm);
+    }
+    .order-stat .label { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem; }
+    .order-stat .value { font-size: 1.25rem; font-weight: 800; color: var(--text-main); }
+
+    .table-responsive { background: white; border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-sm); border: 1px solid #f1f5f9; }
+    table { width: 100%; border-collapse: collapse; }
+    th { background: #f8fafc; padding: 1rem 1.5rem; text-align: left; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; border-bottom: 1px solid #f1f5f9; }
+    td { padding: 1.25rem 1.5rem; border-bottom: 1px solid #f1f5f9; font-size: 0.9375rem; vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+
+    .status-badge { padding: 0.375rem 0.875rem; border-radius: 20px; font-size: 0.75rem; font-weight: 700; display: inline-flex; align-items: center; gap: 0.375rem; transition: var(--transition); }
+    .status-pending { background: #fff7ed; color: #9a3412; }
+    .status-shipped { background: #eff6ff; color: #1e40af; }
+    .status-delivered { background: #f0fdf4; color: #166534; }
+    .status-canceled { background: #fef2f2; color: #991b1b; }
+
+    .btn-action-sm { padding: 0.5rem 0.875rem; border-radius: 8px; font-size: 0.8125rem; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 0.375rem; transition: var(--transition); background: #f8fafc; color: var(--text-main); border: 1px solid #e2e8f0; cursor: pointer; }
+    .btn-action-sm:hover { background: var(--bg-sidebar); color: white; border-color: var(--bg-sidebar); }
+
+    /* Modal Styling */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 2000; align-items: center; justify-content: center; padding: 1rem; }
+    .modal-overlay.active { display: flex; }
+    .modal-content { background: white; border-radius: var(--radius-lg); width: 100%; max-width: 600px; padding: 2rem; box-shadow: var(--shadow-lg); position: relative; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid #f1f5f9; padding-bottom: 1rem; }
+    .close-modal { background: none; border: none; font-size: 1.5rem; color: var(--text-muted); cursor: pointer; }
+
+    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+    .detail-item label { display: block; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.25rem; }
+    .detail-item span { font-weight: 600; color: var(--text-main); }
+
+    .detail-image { width: 100%; height: 180px; object-fit: cover; border-radius: 12px; margin-bottom: 1rem; background: #f8fafc; }
+
+    @media (max-width: 640px) { .detail-grid { grid-template-columns: 1fr; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="order-header-stats">
+    <div class="order-stat">
+        <span class="label">Total Orders</span>
+        <span class="value">{{ orders.count }}</span>
+    </div>
+    <div class="order-stat">
+        <span class="label">Active Sessions</span>
+        <span class="value">1</span>
+    </div>
+</div>
+
+<div class="table-responsive">
+    <table>
+        <thead>
+            <tr>
+                <th>Order ID</th>
+                <th>Product</th>
+                <th>Total Amout</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th style="text-align: right;">Action</th>
+            </tr>
+        </thead>
+        <tbody id="orders-table-body">
+            {% for order in orders %}
+            <tr id="order-row-{{ order.id }}">
+                <td><span style="font-weight: 700; color: var(--primary);">#ORD-{{ order.id }}</span></td>
+                <td>
+                    <span style="font-weight: 600;">
+                        {% with items=order.items.all %}
+                            {{ items.first.product.name }}
+                            {% if items.count > 1 %}
+                                <span style="color: var(--text-muted); font-size: 0.8rem; font-weight: 400;">+ {{ items.count|add:"-1" }} more</span>
+                            {% endif %}
+                        {% endwith %}
+                    </span>
+                </td>
+                <td style="font-weight: 700;">${{ order.total_price }}</td>
+                <td>{{ order.order_date|date:"d M, Y" }}</td>
+                <td>
+                    <span class="status-badge status-{{ order.status }}" id="status-badge-{{ order.id }}">
+                        <i class="fa-solid fa-circle" style="font-size: 6px;"></i>
+                        <span class="status-text">{{ order.get_status_display }}</span>
+                    </span>
+                </td>
+                <td style="text-align: right;">
+                    <button onclick="viewOrderDetails({{ order.id }})" class="btn-action-sm">
+                        <i class="fa-solid fa-eye"></i> Details
+                    </button>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" style="text-align: center; padding: 5rem 2rem;">No orders found.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Order Detail Modal -->
+<div class="modal-overlay" id="orderDetailModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modal-order-id" style="font-weight: 800;">Order Details</h3>
+            <button class="close-modal" onclick="closeOrderModal()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div id="modal-loader" style="text-align: center; padding: 2rem; display: none;">
+            <i class="fa-solid fa-spinner fa-spin" style="font-size: 2rem; color: var(--primary);"></i>
+        </div>
+        <div id="modal-body-content">
+            <div id="items-list-container" style="margin-bottom: 2rem;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 0.875rem;">
+                    <thead>
+                        <tr style="border-bottom: 2px solid #f1f5f9;">
+                            <th style="padding: 0.75rem 0; text-align: left; color: var(--text-muted);">Product</th>
+                            <th style="padding: 0.75rem 0; text-align: center; color: var(--text-muted);">Qty</th>
+                            <th style="padding: 0.75rem 0; text-align: right; color: var(--text-muted);">Price</th>
+                        </tr>
+                    </thead>
+                    <tbody id="det-items-body">
+                    </tbody>
+                </table>
+            </div>
+            <div class="detail-grid">
+                <div class="detail-item"><label>Status</label><span id="det-status"></span></div>
+                <div class="detail-item"><label>Order Date</label><span id="det-date"></span></div>
+                <div class="detail-item"><label>Total Price</label><span id="det-total" style="color: var(--primary); font-size: 1.1rem;"></span></div>
+                <div class="detail-item"><label>Phone</label><span id="det-phone"></span></div>
+                <div class="detail-item" style="grid-column: span 2;"><label>Shipping Address</label><span id="det-address"></span></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function viewOrderDetails(orderId) {
+        const modal = document.getElementById('orderDetailModal');
+        const loader = document.getElementById('modal-loader');
+        const content = document.getElementById('modal-body-content');
+        const itemsBody = document.getElementById('det-items-body');
+        
+        modal.classList.add('active');
+        loader.style.display = 'block';
+        content.style.display = 'none';
+        itemsBody.innerHTML = '';
+
+        fetch(`/orders/order-detail/${orderId}/`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('modal-order-id').innerText = `Order #ORD-${data.id}`;
+                document.getElementById('det-total').innerText = `$${data.total_price}`;
+                document.getElementById('det-status').innerText = data.status_display;
+                document.getElementById('det-date').innerText = data.order_date;
+                document.getElementById('det-address').innerText = data.address;
+                document.getElementById('det-phone').innerText = data.phone;
+                
+                data.items.forEach(item => {
+                    const row = `
+                        <tr style="border-bottom: 1px solid #f8fafc;">
+                            <td style="padding: 1rem 0; display: flex; align-items: center; gap: 0.75rem;">
+                                ${item.image_url ? `<img src="${item.image_url}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 8px;">` : `<div style="width: 40px; height: 40px; background: #f1f5f9; border-radius: 8px; display: flex; align-items: center; justify-content: center;"><i class="fa-solid fa-box" style="color: #cbd5e1;"></i></div>`}
+                                <span style="font-weight: 600; color: var(--text-main);">${item.product_name}</span>
+                            </td>
+                            <td style="padding: 1rem 0; text-align: center; font-weight: 600;">${item.quantity}</td>
+                            <td style="padding: 1rem 0; text-align: right; font-weight: 700; color: var(--text-main);">$${item.price}</td>
+                        </tr>
+                    `;
+                    itemsBody.insertAdjacentHTML('beforeend', row);
+                });
+
+                loader.style.display = 'none';
+                content.style.display = 'block';
+            })
+            .catch(err => {
+                console.error('Error fetching order details:', err);
+                closeOrderModal();
+            });
+    }
+
+    function closeOrderModal() {
+        document.getElementById('orderDetailModal').classList.remove('active');
+    }
+
+    // Real-time Status Polling
+    function pollOrderStatus() {
+        fetch('/orders/check-orders-status/')
+            .then(response => response.json())
+            .then(data => {
+                data.orders.forEach(order => {
+                    const badge = document.getElementById(`status-badge-${order.id}`);
+                    if (badge) {
+                        const currentStatus = Array.from(badge.classList).find(c => c.startsWith('status-') && c !== 'status-badge');
+                        const newStatusClass = `status-${order.status}`;
+                        
+                        if (currentStatus !== newStatusClass) {
+                            badge.classList.remove(currentStatus);
+                            badge.classList.add(newStatusClass);
+                            badge.querySelector('.status-text').innerText = order.status_display;
+                            
+                            // Visual feedback for update
+                            badge.style.transform = 'scale(1.1)';
+                            setTimeout(() => badge.style.transform = 'scale(1)', 300);
+                        }
+                    }
+                });
+            })
+            .catch(err => console.error('Status check failed:', err));
+    }
+
+    // Start polling every 10 seconds
+    setInterval(pollOrderStatus, 10000);
+
+    window.onclick = function(event) {
+        let modal = document.getElementById('orderDetailModal');
+        if (event.target == modal) closeOrderModal();
+    }
+</script>
+{% endblock %}

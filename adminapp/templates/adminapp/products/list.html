@@ -1,0 +1,103 @@
+{% extends 'adminapp/base.html' %}
+
+{% block title %}Inventory | Gado Admin{% endblock %}
+{% block page_title %}Product Inventory{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+        <h3 style="font-weight: 800; font-size: 1.1rem;"><i class="fa-solid fa-boxes-stacked" style="color: var(--primary);"></i> Stock Control</h3>
+        
+        <form style="display: flex; gap: 8px; flex-grow: 1; max-width: 400px;">
+            <div style="position: relative; flex-grow: 1;">
+                <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--text-light); font-size: 0.9rem;"></i>
+                <input type="text" name="q" placeholder="Search Products..." value="{{ query }}" class="form-control" style="padding-left: 44px; background: var(--bg-body);">
+            </div>
+            <button type="submit" class="btn btn-primary">Search</button>
+        </form>
+
+        {% if admin.is_superuser %}
+        <a href="{% url 'admin_product_add' %}" class="btn btn-primary">
+            <i class="fa-solid fa-plus"></i> Add New Product
+        </a>
+        {% endif %}
+    </div>
+
+    <div class="data-table-wrapper">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Product Info</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Stock</th>
+                    <th>Status</th>
+                    <th style="text-align: right;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in products %}
+                <tr>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div class="premium-image-wrapper" onclick="openLightbox('{{ p.image.url|default:'' }}', '{{ p.name|escapejs }}')">
+                                {% if p.image %}
+                                <img src="{{ p.image.url }}" alt="{{ p.name }}">
+                                {% else %}
+                                <div style="height: 100%; display: flex; align-items: center; justify-content: center; color: var(--text-light);">
+                                    <i class="fa-solid fa-image"></i>
+                                </div>
+                                {% endif %}
+                                <div class="premium-image-overlay"><i class="fa-solid fa-expand"></i></div>
+                            </div>
+                            <div>
+                                <span style="display: block; font-weight: 800; color: var(--text-main);">{{ p.name }}</span>
+                                <span style="font-size: 0.75rem; color: var(--text-light);">#PRD-{{ p.id }}</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span style="font-weight: 600; color: var(--text-muted);">{{ p.category.name }}</span>
+                    </td>
+                    <td style="font-weight: 800; color: var(--primary);">${{ p.price }}</td>
+                    <td>
+                        <span style="font-weight: 700; color: {% if p.quatentity < 5 %}#ef4444{% else %}var(--text-main){% endif %};">
+                            {{ p.quatentity }} units
+                        </span>
+                    </td>
+                    <td>
+                        {% if p.available %}
+                        <span class="badge badge-success">Active</span>
+                        {% else %}
+                        <span class="badge badge-danger">Disabled</span>
+                        {% endif %}
+                    </td>
+                    <td style="text-align: right;">
+                        <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                            <button onclick="viewProductDetails({{ p.id }})" class="btn" style="background: var(--bg-body); padding: 8px; color: var(--primary);" title="View Details">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                            <a href="{% url 'admin_product_edit' p.id %}" class="btn" style="background: var(--bg-body); padding: 8px; color: var(--primary);">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </a>
+                            {% if admin.is_superuser %}
+                            <a href="#" onclick="return confirmAction('{% url 'admin_product_delete' p.id %}', 'Delete Product?', 'Sil ko dhab ah ma u tirtireysaa alaabtan?')" class="btn" style="background: var(--bg-body); padding: 8px; color: #ef4444;">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 4rem; color: var(--text-light);">
+                        <i class="fa-solid fa-box-open" style="display: block; font-size: 3rem; margin-bottom: 1rem; opacity: 0.3;"></i>
+                        Bakhaarkaagu waa madhan yahay.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends 'adminapp/base.html' %}
+
+{% block title %}{{ title }} | Gado Admin{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 600px; margin: 0 auto;">
+    <div style="margin-bottom: 2rem;">
+        <h3 style="font-weight: 800; font-size: 1.25rem;">{{ title }}</h3>
+        <p style="color: var(--text-muted); font-size: 0.85rem;">Qayax macluumaadka noocan cusub si aad alaabta ugu darto.</p>
+    </div>
+    
+    <form method="POST">
+        {% csrf_token %}
+        <div class="form-group">
+            <label class="form-label">Magaca Nooca (Category Name)</label>
+            <input type="text" name="name" value="{% if category %}{{ category.name }}{% endif %}" required class="form-control" placeholder="Tusaale: Cabitaanada">
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Faahfaahinta</label>
+            <textarea name="description" class="form-control" placeholder="Halkan ku qor faahfaahinta kooban oo ku saabsan noocan...">{% if category %}{{ category.description }}{% endif %}</textarea>
+        </div>
+
+        <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+            <button type="submit" class="btn btn-primary" style="flex: 1; justify-content: center;">
+                <i class="fa-solid fa-cloud-arrow-up"></i> Keydi Noocan
+            </button>
+            <a href="{% url 'admin_category_list' %}" class="btn" style="background: var(--bg-body); color: var(--text-muted); flex: 1; justify-content: center;">
+                Jooji
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,61 @@
+{% extends 'adminapp/base.html' %}
+
+{% block title %}{{ title }} | Gado Admin{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 600px; margin: 0 auto;">
+    <div style="margin-bottom: 2rem;">
+        <h3 style="font-weight: 800; font-size: 1.25rem;">{{ title }}</h3>
+        <p style="color: var(--text-muted); font-size: 0.85rem;">Maamul cusub kudar ama wax ka badal macluumaadka jira.</p>
+    </div>
+    
+    <form method="POST">
+        {% csrf_token %}
+        <div class="form-group">
+            <label class="form-label">Magaca oo Buuxa (Full Name)</label>
+            <input type="text" name="fullname" value="{% if staff %}{{ staff.get_full_name|default:staff.fullname }}{% endif %}" required class="form-control" placeholder="Tusaale: Axmed Cali">
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+            <div class="form-group">
+                <label class="form-label">Username</label>
+                <input type="text" name="username" value="{% if staff %}{{ staff.username }}{% endif %}" required class="form-control" placeholder="admin_01">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Emailka</label>
+                <input type="email" name="email" value="{% if staff %}{{ staff.email }}{% endif %}" required class="form-control" placeholder="admin@gado.com">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Fureha (Password)</label>
+            <input type="password" name="password" placeholder="{% if staff %}Halkan kaga tag madhan hadii aadan badalaynin{% else %}Gali fureha bilowga ah{% endif %}" {% if not staff %}required{% endif %} class="form-control">
+            {% if staff %}
+            <p style="font-size: 0.75rem; color: var(--text-light); margin-top: 5px;"><i class="fa-solid fa-circle-info"></i> Waxaad badali kartaa password-ka kaliya hadii loo baahdo.</p>
+            {% endif %}
+        </div>
+
+        <div style="background: var(--bg-body); padding: 1.5rem; border-radius: 12px; border: 1px dashed var(--border-color); margin-bottom: 2rem;">
+            <h4 style="font-size: 0.85rem; font-weight: 800; margin-bottom: 1rem; color: var(--primary);"><i class="fa-solid fa-shield-halved"></i> Heerka Maamulka (Account Type)</h4>
+            
+            <div style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+                <input type="checkbox" name="is_super_admin" id="isSuper" {% if staff and staff.is_superuser %}checked{% endif %} style="width: 20px; height: 20px; accent-color: var(--primary);">
+                <label for="isSuper" style="font-weight: 700; color: var(--text-main); cursor: pointer;">Super Admin (Awood Buuxda)</label>
+            </div>
+            <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 8px; margin-left: 32px;">
+                Cid kasta oo Super Admin ah waxay awood u leedahay inay tirtirto alaabta, dalabaadka, iyo inay maamusho dadka kale ee maamulka ah.
+            </p>
+        </div>
+
+        <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+            <button type="submit" class="btn btn-primary" style="flex: 1; justify-content: center;">
+                <i class="fa-solid fa-user-check"></i> Keydi Maamulahan
+            </button>
+            <a href="{% url 'admin_member_list' %}" class="btn" style="background: var(--bg-body); color: var(--text-muted); flex: 1; justify-content: center;">
+                Jooji
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

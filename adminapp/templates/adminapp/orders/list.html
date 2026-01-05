@@ -1,0 +1,151 @@
+{% extends 'adminapp/base.html' %}
+
+{% block title %}Orders | Gado Admin{% endblock %}
+{% block page_title %}Order Management{% endblock %}
+
+{% block extra_css %}
+<style>
+    .filter-pills { display: flex; gap: 10px; margin-bottom: 2rem; flex-wrap: wrap; }
+    .pill { 
+        padding: 8px 20px; 
+        border-radius: 50px; 
+        text-decoration: none; 
+        font-size: 0.85rem; 
+        font-weight: 700; 
+        transition: var(--transition); 
+        background: white; 
+        border: 1px solid var(--border-color); 
+        color: var(--text-muted); 
+    }
+    .pill:hover { border-color: var(--primary); color: var(--primary); }
+    .pill.active { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+    <div class="filter-pills" style="margin-bottom: 0;">
+        <a href="{% url 'admin_order_list' %}" class="pill {% if not current_status %}active{% endif %}">All Orders</a>
+        <a href="?status=pending" class="pill {% if current_status == 'pending' %}active{% endif %}">Pending</a>
+        <a href="?status=shipped" class="pill {% if current_status == 'shipped' %}active{% endif %}">Shipped</a>
+        <a href="?status=delivered" class="pill {% if current_status == 'delivered' %}active{% endif %}">Delivered</a>
+        <a href="?status=canceled" class="pill {% if current_status == 'canceled' %}active{% endif %}">Canceled</a>
+    </div>
+
+    <form style="display: flex; gap: 8px; flex-grow: 1; max-width: 400px; justify-content: flex-end;">
+        <div style="position: relative; flex-grow: 1;">
+            <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--text-light); font-size: 0.9rem;"></i>
+            <input type="text" name="q" placeholder="Search Order ID, Name..." value="{{ query }}" class="form-control" style="padding-left: 44px; background: white;">
+        </div>
+        <button type="submit" class="btn btn-primary" style="padding: 0 24px;">Search</button>
+    </form>
+</div>
+
+<div class="card">
+    <div class="data-table-wrapper">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Invoice / Date</th>
+                    <th>Ordered Item</th>
+                    <th>Customer Details</th>
+                    <th>Delivery Address</th>
+                    <th>Total Price</th>
+                    <th>Status</th>
+                    <th style="text-align: right;">Operations</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr>
+                    <td>
+                        <span style="display: block; font-weight: 800; color: var(--primary);">#ORD-{{ order.id }}</span>
+                        <span style="font-size: 0.75rem; color: var(--text-light);">{{ order.order_date|date:"d M, Y H:i" }}</span>
+                    </td>
+                    <td>
+                        {% with first_item=order.items.first %}
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div class="premium-image-wrapper" style="width: 48px; height: 48px; border-radius: 8px;" onclick="openLightbox('{{ first_item.product.image.url|default:'' }}', '{{ first_item.product.name|escapejs }}')">
+                                {% if first_item.product.image %}
+                                <img src="{{ first_item.product.image.url }}" alt="Item">
+                                {% else %}
+                                <div style="height: 100%; display: flex; align-items: center; justify-content: center; color: var(--text-light); font-size: 0.8rem;">
+                                    <i class="fa-solid fa-image"></i>
+                                </div>
+                                {% endif %}
+                                <div class="premium-image-overlay"><i class="fa-solid fa-expand"></i></div>
+                            </div>
+                            <div style="display: flex; flex-direction: column;">
+                                <span style="font-weight: 700; font-size: 0.9rem; color: var(--text-main);">{{ first_item.product.name|truncatechars:20 }}</span>
+                                {% if order.items.count > 1 %}
+                                <span style="font-size: 0.7rem; color: var(--primary); font-weight: 600;">+ {{ order.items.count|add:"-1" }} more items</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endwith %}
+                    </td>
+                    <td>
+                        <div style="font-weight: 800; color: var(--text-main);">{{ order.user.name }}</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">@{{ order.user.username }}</div>
+                    </td>
+                    <td>
+                        <div style="font-size: 0.85rem; font-weight: 600;"><i class="fa-solid fa-phone" style="width: 16px; color: var(--primary);"></i> {{ order.phone_number }}</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);"><i class="fa-solid fa-location-arrow" style="width: 16px;"></i> {{ order.address|truncatechars:40 }}</div>
+                    </td>
+                    <td>
+                        <span style="font-size: 1.1rem; font-weight: 800; color: var(--text-main);">${{ order.total_price }}</span>
+                    </td>
+                    <td>
+                        <span class="badge 
+                            {% if order.status == 'pending' %}badge-warning
+                            {% elif order.status == 'shipped' %}badge-info
+                            {% elif order.status == 'delivered' %}badge-success
+                            {% else %}badge-danger{% endif %}">
+                            <i class="fa-solid {% if order.status == 'pending' %}fa-clock{% elif order.status == 'shipped' %}fa-truck{% elif order.status == 'delivered' %}fa-circle-check{% else %}fa-circle-xmark{% endif %}"></i>
+                            {{ order.status }}
+                        </span>
+                    </td>
+                    <td style="text-align: right;">
+                        <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                            <button onclick="viewOrderDetails({{ order.id }})" class="btn" style="background: var(--bg-body); padding: 8px; color: var(--primary);" title="View Details">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                            {% if order.status == 'pending' or order.status == 'canceled' %}
+                            <a href="{% url 'admin_order_status_update' order.id 'shipped' %}" class="btn" style="background: var(--bg-body); padding: 8px; color: var(--primary);" title="Mark as Shipped">
+                                <i class="fa-solid fa-truck-fast"></i>
+                            </a>
+                            {% endif %}
+                            
+                            {% if order.status == 'shipped' or order.status == 'canceled' %}
+                            <a href="{% url 'admin_order_status_update' order.id 'delivered' %}" class="btn" style="background: var(--bg-body); padding: 8px; color: #16a34a;" title="Mark as Delivered">
+                                <i class="fa-solid fa-check-double"></i>
+                            </a>
+                            {% endif %}
+                            
+                            {% if order.status != 'canceled' and order.status != 'delivered' %}
+                            <a href="#" onclick="return confirmAction('{% url 'admin_order_status_update' order.id 'canceled' %}', 'Cancel Order?', 'Sil ko dhab ah ma u lalaabeysaa dalabkan?')" class="btn" style="background: var(--bg-body); padding: 8px; color: #ef4444;" title="Cancel Order">
+                                <i class="fa-solid fa-ban"></i>
+                            </a>
+                            {% endif %}
+                            
+                            {% if admin.is_superuser %}
+                            <a href="#" onclick="return confirmAction('{% url 'admin_order_delete' order.id %}', 'Delete Record?', 'Ma hubtaa in aad tirtirto diiwankaan?')" class="btn" style="background: var(--bg-body); padding: 8px; color: var(--text-light);" title="Delete Record">
+                                <i class="fa-solid fa-trash"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 4rem; color: var(--text-light);">
+                        <i class="fa-solid fa-clipboard-list" style="display: block; font-size: 3rem; margin-bottom: 1rem; opacity: 0.3;"></i>
+                        Wax dalab ah laguma helin xaaladdan.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

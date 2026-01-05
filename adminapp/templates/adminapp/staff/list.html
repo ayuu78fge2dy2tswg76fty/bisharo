@@ -1,0 +1,232 @@
+{% extends 'adminapp/base.html' %}
+
+{% block title %}Admin Staff | Gado Admin{% endblock %}
+{% block page_title %}Staff Management{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <h3 style="font-weight: 800; font-size: 1.1rem;"><i class="fa-solid fa-user-shield" style="color: var(--primary);"></i> Administrative Team</h3>
+        <a href="{% url 'admin_member_add' %}" class="btn btn-primary">
+            <i class="fa-solid fa-plus"></i> Add New Member
+        </a>
+    </div>
+
+    <div class="data-table-wrapper">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Staff Member</th>
+                    <th>Role & Status</th>
+                    <th>Permissions</th>
+                    <th style="text-align: right;">Operations</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for a in admins %}
+                <tr>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--bg-body); display: flex; align-items: center; justify-content: center; font-weight: 800; color: var(--primary); border: 2px solid var(--border-color);">
+                                {{ a.username|slice:":1"|upper }}
+                            </div>
+                            <div>
+                                <span style="display: block; font-weight: 800; color: var(--text-main);">{{ a.get_full_name|default:a.username }}</span>
+                                <span style="font-size: 0.75rem; color: var(--text-muted);">{{ a.email }}</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        {% if a.is_superuser %}
+                        <span class="badge" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6;">
+                            <i class="fa-solid fa-crown"></i> Superuser
+                        </span>
+                        {% elif a.is_staff %}
+                        <span class="badge badge-info">
+                            <i class="fa-solid fa-user-tie"></i> Staff Member
+                        </span>
+                        {% else %}
+                        <span class="badge badge-danger">Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div style="display: flex; gap: 5px; flex-wrap: wrap;">
+                            {% if a.is_superuser %}
+                                <span class="badge badge-success" style="font-size: 0.65rem;">FULL ACCESS</span>
+                            {% else %}
+                                <span class="badge" style="font-size: 0.65rem; background: var(--bg-body);">Standard Access</span>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td style="text-align: right;">
+                        <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                            <a href="{% url 'admin_member_edit' a.id %}" class="btn" style="background: var(--bg-body); padding: 8px; color: var(--primary);">
+                                <i class="fa-solid fa-user-pen"></i>
+                            </a>
+                            {% if a.id != user.id %}
+                            <button onclick="openDeleteModal('{{ a.id }}', '{{ a.username }}')" class="btn" style="background: var(--bg-body); padding: 8px; color: #ef4444;">
+                                <i class="fa-solid fa-user-xmark"></i>
+                            </button>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" style="text-align: center; padding: 4rem; color: var(--text-light);">
+                        <i class="fa-solid fa-users-slash" style="display: block; font-size: 3rem; margin-bottom: 1rem; opacity: 0.3;"></i>
+                        Maya cid maamulayaasha ka mid ah oo la helay.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="modal-overlay" style="display: none; opacity: 0; transition: opacity 0.3s ease; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); z-index: 9999; align-items: center; justify-content: center;">
+    <div class="modal-content" id="deleteModalContent" style="max-width: 500px; width: 90%; margin: 20px; padding: 2.5rem; transform: scale(0.9); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); background: #ffffff; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35); border-radius: 20px; position: relative;">
+        <!-- Icon Section -->
+        <div style="margin-bottom: 2rem; position: relative;">
+            <div style="width: 90px; height: 90px; background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; position: relative; box-shadow: 0 10px 30px -5px rgba(220, 38, 38, 0.4);">
+                <div style="position: absolute; width: 100%; height: 100%; border-radius: 50%; background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%); opacity: 0.15; animation: pulse 2s infinite;"></div>
+                <i class="fa-solid fa-shield-exclamation" style="font-size: 2.5rem; color: #dc2626; position: relative; z-index: 1;"></i>
+            </div>
+        </div>
+
+        <!-- Content Section -->
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <h3 style="font-weight: 800; font-size: 1.75rem; color: #1f2937; margin-bottom: 1rem; letter-spacing: -0.025em;">Confirm Admin Deletion</h3>
+            <p style="color: #6b7280; font-size: 1rem; line-height: 1.6; margin-bottom: 1.25rem;">
+                Ma hubtaa in aad tirtirto maamulaha
+            </p>
+            <div style="display: inline-block; background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); padding: 1rem 2rem; border-radius: 14px; border: 2px solid #dc2626; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.15);">
+                <span id="deleteUsername" style="font-weight: 800; font-size: 1.25rem; color: #dc2626;"></span>
+            </div>
+        </div>
+        
+        <!-- Form Section -->
+        <form id="deleteForm" method="POST" action="" style="margin-bottom: 0;">
+            {% csrf_token %}
+            
+            <!-- Warning Alert -->
+            <div style="background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); border-left: 5px solid #f59e0b; padding: 1.25rem; border-radius: 12px; margin-bottom: 2rem; display: flex; gap: 14px; align-items: start; box-shadow: 0 2px 8px rgba(245, 158, 11, 0.1);">
+                <i class="fa-solid fa-triangle-exclamation" style="color: #f59e0b; font-size: 1.4rem; margin-top: 2px; flex-shrink: 0;"></i>
+                <div style="flex: 1;">
+                    <p style="font-size: 0.9rem; color: #92400e; font-weight: 700; margin: 0 0 0.25rem 0;">This action cannot be undone</p>
+                    <p style="font-size: 0.85rem; color: #78350f; margin: 0; line-height: 1.5;">All associated data will be permanently removed from the system</p>
+                </div>
+            </div>
+
+            <!-- Password Input -->
+            <div class="form-group" style="margin-bottom: 2rem; text-align: left;">
+                <label style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 10px; color: #1f2937;">
+                    <i class="fa-solid fa-key" style="color: #8b5cf6; font-size: 1rem;"></i>
+                    Super Admin Password
+                </label>
+                <div style="position: relative;">
+                    <i class="fa-solid fa-lock" style="position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: #9ca3af; font-size: 1rem; z-index: 1;"></i>
+                    <input type="password" name="password" required class="form-control" placeholder="Enter your password to confirm" style="width: 100%; padding: 14px 18px 14px 50px; height: 52px; border: 2px solid #e5e7eb; border-radius: 12px; font-size: 1rem; transition: all 0.2s ease; background: #ffffff;" onfocus="this.style.borderColor='#8b5cf6'; this.style.boxShadow='0 0 0 4px rgba(139, 92, 246, 0.1)'" onblur="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none'">
+                </div>
+                <p style="font-size: 0.8rem; color: #9ca3af; margin-top: 0.75rem; display: flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-circle-info"></i>
+                    Password verification required for security purposes
+                </p>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div style="display: flex; gap: 14px;">
+                <button type="button" onclick="closeDeleteModal()" class="btn" style="flex: 1; height: 52px; background: #f9fafb; color: #374151; border: 2px solid #e5e7eb; font-weight: 700; font-size: 1rem; border-radius: 12px; transition: all 0.2s ease; cursor: pointer;" onmouseover="this.style.background='#f3f4f6'; this.style.borderColor='#d1d5db'; this.style.transform='translateY(-1px)'" onmouseout="this.style.background='#f9fafb'; this.style.borderColor='#e5e7eb'; this.style.transform='translateY(0)'">
+                    <i class="fa-solid fa-xmark"></i> Cancel
+                </button>
+                <button type="submit" class="btn btn-primary" style="flex: 1; height: 52px; background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); border: none; color: white; font-weight: 700; font-size: 1rem; border-radius: 12px; box-shadow: 0 6px 16px rgba(220, 38, 38, 0.35); transition: all 0.2s ease; cursor: pointer;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(220, 38, 38, 0.45)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 6px 16px rgba(220, 38, 38, 0.35)'">
+                    <i class="fa-solid fa-trash-can"></i> Delete Admin
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 0.1;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 0.2;
+    }
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.modal-overlay.show {
+    opacity: 1 !important;
+}
+
+.modal-overlay.show .modal-content {
+    transform: scale(1) !important;
+}
+</style>
+
+<script>
+function openDeleteModal(id, username) {
+    const modal = document.getElementById('deleteModal');
+    const modalContent = document.getElementById('deleteModalContent');
+    const usernameSpan = document.getElementById('deleteUsername');
+    const form = document.getElementById('deleteForm');
+    
+    usernameSpan.textContent = username;
+    form.action = "{% url 'admin_member_delete' 0 %}".replace('0', id);
+    
+    // Show modal with animation
+    modal.style.display = 'flex';
+    setTimeout(() => {
+        modal.classList.add('show');
+    }, 10);
+    
+    // Focus password input
+    setTimeout(() => {
+        form.querySelector('input[name="password"]').focus();
+    }, 300);
+}
+
+function closeDeleteModal() {
+    const modal = document.getElementById('deleteModal');
+    modal.classList.remove('show');
+    
+    setTimeout(() => {
+        modal.style.display = 'none';
+        document.getElementById('deleteForm').reset();
+    }, 300);
+}
+
+// Close modal when clicking outside
+document.getElementById('deleteModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeDeleteModal();
+    }
+});
+
+// Close modal with Escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        const modal = document.getElementById('deleteModal');
+        if (modal.style.display === 'flex') {
+            closeDeleteModal();
+        }
+    }
+});
+</script>
+{% endblock %}

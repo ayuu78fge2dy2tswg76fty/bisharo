@@ -1,0 +1,899 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="so">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Gado Store | Dashboard{% endblock %}</title>
+    
+    <!-- Fonts & Icons -->
+    <link rel="icon" type="image/x-icon" href="{% static 'admin/img/weplogo.png' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
+    <style>
+        :root {
+            /* Branding Colors */
+            --primary: #4f46e5;
+            --primary-soft: rgba(79, 70, 229, 0.1);
+            --primary-hover: #4338ca;
+            
+            /* Backgrounds */
+            --bg-body: #f8fafc;
+            --bg-sidebar: #0f172a;
+            --bg-card: #ffffff;
+            --bg-topbar: rgba(255, 255, 255, 0.8);
+            
+            /* Text Colors */
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --text-light: #94a3b8;
+            --text-white: #ffffff;
+            
+            /* Borders & Shadows */
+            --border-color: #e2e8f0;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            
+            /* Utils */
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --sidebar-width: 280px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            overflow-x: hidden;
+        }
+
+        /* --- Sidebar --- */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--bg-sidebar);
+            height: 100vh;
+            position: fixed;
+            left: 0; top: 0;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            transition: var(--transition);
+        }
+
+        .sidebar-brand {
+            padding: 2rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: white;
+            text-decoration: none;
+        }
+
+        .brand-logo {
+            width: 40px; height: 40px;
+            background: var(--primary);
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: 0 8px 16px rgba(79, 70, 229, 0.3);
+        }
+
+        .brand-name { font-weight: 800; font-size: 1.25rem; letter-spacing: -0.5px; }
+
+        .nav-list { list-style: none; padding: 0 1rem; flex-grow: 1; }
+        .nav-item { margin-bottom: 4px; }
+        .nav-link {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px 16px;
+            color: var(--text-light);
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: var(--transition);
+        }
+
+        .nav-link:hover { color: white; background: rgba(255, 255, 255, 0.05); }
+        .nav-link.active { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3); }
+        .nav-link i { font-size: 1.1rem; width: 24px; text-align: center; }
+
+        .sidebar-footer { padding: 1.5rem; border-top: 1px solid rgba(255, 255, 255, 0.05); }
+        .logout-btn { color: #f87171; display: flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 700; padding: 12px; border-radius: 12px; transition: var(--transition); }
+        .logout-btn:hover { background: rgba(239, 68, 68, 0.1); }
+
+        /* --- Main Content --- */
+        .main-wrapper {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            width: calc(100% - var(--sidebar-width));
+            display: flex;
+            flex-direction: column;
+        }
+
+        .topbar {
+            height: 72px;
+            background: var(--bg-topbar);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            position: sticky; top: 0; z-index: 900;
+        }
+
+        .page-info h1 { font-size: 1.25rem; font-weight: 800; color: var(--text-main); }
+        
+        .user-profile {
+            display: flex; align-items: center; gap: 12px;
+            padding: 6px 12px;
+            border-radius: 50px;
+            background: white;
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .user-profile:hover { border-color: var(--primary); background: var(--bg-body); }
+        .user-avatar { width: 32px; height: 32px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; font-size: 0.8rem; }
+        .user-name { font-size: 0.85rem; font-weight: 700; color: var(--text-main); }
+
+        .content-area { padding: 2rem; }
+
+        /* --- Reusable Components --- */
+        .card { background: var(--bg-card); border-radius: var(--radius-lg); border: 1px solid var(--border-color); padding: 1.5rem; box-shadow: var(--shadow-sm); }
+        .btn { padding: 10px 20px; border-radius: 10px; font-weight: 700; font-size: 0.9rem; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: var(--transition); text-decoration: none; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-hover); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4); }
+        
+        /* Table Styles */
+        .data-table-wrapper { overflow-x: auto; margin-top: 1rem; }
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th { text-align: left; padding: 12px 16px; font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; border-bottom: 2px solid var(--bg-body); }
+        .data-table td { padding: 16px; font-size: 0.9rem; border-bottom: 1px solid var(--border-color); color: var(--text-main); }
+        .data-table tr:hover { background: var(--bg-body); }
+
+        /* Badges */
+        .badge { padding: 6px 12px; border-radius: 50px; font-size: 0.75rem; font-weight: 800; text-transform: capitalize; display: inline-flex; align-items: center; gap: 5px; }
+        .badge-success { background: #f0fdf4; color: #16a34a; }
+        .badge-warning { background: #fffbeb; color: #d97706; }
+        .badge-danger { background: #fef2f2; color: #dc2626; }
+        .badge-info { background: #eff6ff; color: #2563eb; }
+
+        /* Form Styling */
+        .form-group { margin-bottom: 1.5rem; }
+        .form-label { display: block; font-size: 0.85rem; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; }
+        .form-control { 
+            width: 100%; 
+            padding: 12px 16px; 
+            border-radius: 12px; 
+            border: 1px solid var(--border-color); 
+            background: white; 
+            color: var(--text-main); 
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+        .form-control:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px var(--primary-soft); }
+        textarea.form-control { min-height: 120px; resize: vertical; }
+
+        /* Message Styling */
+        .alert { padding: 1rem; border-radius: var(--radius-md); margin-bottom: 2rem; display: flex; align-items: center; gap: 12px; font-weight: 600; font-size: 0.9rem; }
+        .alert-success { background: #ecfdf5; color: #059669; border: 1px solid #d1fae5; }
+        .alert-error { background: #fef2f2; color: #dc2626; border: 1px solid #fee2e2; }
+
+        @media (max-width: 1024px) {
+            .sidebar { transform: translateX(-100%); width: 260px; }
+            .sidebar.active { transform: translateX(0); }
+            .main-wrapper { margin-left: 0; width: 100%; }
+            .menu-toggle { display: block !important; }
+        }
+
+        .menu-toggle { display: none; background: transparent; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-main); }
+
+        /* --- Modal System --- */
+        .modal-backdrop {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(8px);
+            z-index: 2000; display: none; align-items: center; justify-content: center;
+            opacity: 0; transition: opacity 0.3s ease;
+        }
+        .modal-backdrop.show { display: flex; opacity: 1; }
+        
+        .modal-container {
+            background: white; width: 95%; max-width: 700px;
+            border-radius: 24px; box-shadow: var(--shadow-lg);
+            position: relative; overflow: hidden;
+            transform: translateY(20px); transition: transform 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        .modal-backdrop.show .modal-container { transform: translateY(0); }
+        
+        .modal-header {
+            padding: 1.5rem 2rem; border-bottom: 1px solid var(--border-color);
+            display: flex; justify-content: space-between; align-items: center;
+            background: var(--bg-body);
+        }
+        .modal-header h3 { font-size: 1.25rem; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 12px; }
+        
+        .modal-close {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: white; border: 1px solid var(--border-color);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; color: var(--text-muted); transition: var(--transition);
+        }
+        .modal-close:hover { background: #fef2f2; color: #dc2626; border-color: #fee2e2; }
+        
+        .modal-body { padding: 2rem; max-height: 80vh; overflow-y: auto; }
+        
+        /* Modal Content Helpers */
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem; }
+        .info-item label { display: block; font-size: 0.75rem; font-weight: 800; color: var(--text-light); text-transform: uppercase; margin-bottom: 4px; }
+        .info-item span { display: block; font-weight: 700; color: var(--text-main); font-size: 1rem; }
+        
+        .order-items-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        .order-items-table th { text-align: left; padding: 12px; font-size: 0.75rem; color: var(--text-muted); border-bottom: 2px solid var(--bg-body); }
+        .order-items-table td { padding: 12px; font-size: 0.85rem; border-bottom: 1px solid var(--border-color); }
+
+        /* --- Premium Image Preview --- */
+        .premium-image-wrapper {
+            position: relative;
+            width: 48px; height: 48px;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            background: var(--bg-body);
+            cursor: pointer;
+            transition: var(--transition);
+            flex-shrink: 0;
+        }
+        .premium-image-wrapper:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--primary);
+        }
+        .premium-image-wrapper img {
+            width: 100%; height: 100%;
+            object-fit: cover;
+            transition: var(--transition);
+        }
+        .premium-image-wrapper:hover img {
+            transform: scale(1.1);
+            filter: brightness(0.8);
+        }
+        .premium-image-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(79, 70, 229, 0.4);
+            backdrop-filter: blur(2px);
+            display: flex; align-items: center; justify-content: center;
+            color: white;
+            opacity: 0;
+            transition: var(--transition);
+            font-size: 0.8rem;
+        }
+        .premium-image-wrapper:hover .premium-image-overlay {
+            opacity: 1;
+        }
+
+        /* --- Lightbox --- */
+        .lightbox-backdrop {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(12px);
+            z-index: 3000; display: none; align-items: center; justify-content: center;
+            padding: 2rem; opacity: 0; transition: opacity 0.3s ease;
+        }
+        .lightbox-backdrop.show { display: flex; opacity: 1; }
+        .lightbox-container {
+            max-width: 90%; max-height: 90%;
+            position: relative;
+            transform: scale(0.9); transition: transform 0.3s ease;
+            display: flex; flex-direction: column; align-items: center;
+        }
+        .lightbox-backdrop.show .lightbox-container { transform: scale(1); }
+        .lightbox-container img {
+            max-width: 100%; max-height: 80vh; border-radius: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .lightbox-close {
+            position: absolute; top: -50px; right: 0;
+            color: white; font-size: 2rem; cursor: pointer;
+            transition: var(--transition); padding: 10px;
+        }
+        .lightbox-close:hover { transform: rotate(90deg); color: #ef4444; }
+        #lightbox-title { color: white; margin-top: 1.5rem; font-weight: 700; font-size: 1.25rem; letter-spacing: -0.5px; }
+
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <a href="{% url 'admin_dashboard' %}" class="sidebar-brand">
+            <div class="brand-logo"><i class="fa-solid fa-crown"></i></div>
+            <span class="brand-name">Gado Admin</span>
+        </a>
+
+        <ul class="nav-list">
+            <li class="nav-item">
+                <a href="{% url 'admin_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">
+                    <i class="fa-solid fab fa-dashcube"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+
+            {# Main Modules - Visible to Staff and Superusers #}
+            {# Using 'admin' variable as views pass it from session admin_id #}
+            {% if admin.is_staff or admin.is_superuser %}
+            <li class="nav-item">
+                <a href="{% url 'admin_product_list' %}" class="nav-link {% if 'product' in request.path %}active{% endif %}">
+                    <i class="fa-solid fa-box-open"></i>
+                    <span>Products</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'admin_category_list' %}" class="nav-link {% if 'category' in request.path %}active{% endif %}">
+                    <i class="fa-solid fa-tags"></i>
+                    <span>Categories</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'admin_order_list' %}" class="nav-link {% if 'order' in request.path %}active{% endif %}">
+                    <i class="fa-solid fa-bag-shopping"></i>
+                    <span>Orders</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'admin_user_list' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_user_list' %}active{% endif %}">
+                    <i class="fa-solid fa-users"></i>
+                    <span>Customers</span>
+                </a>
+            </li>
+            {% endif %}
+
+            {# Management - Only for Superusers #}
+            {% if admin.is_superuser %}
+            <li class="nav-item">
+                <a href="{% url 'admin_member_list' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_member_list' %}active{% endif %}">
+                    <i class="fa-solid fa-user-shield"></i>
+                    <span>Management</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'admin_analytics' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_analytics' %}active{% endif %}">
+                    <i class="fa-solid fa-chart-line"></i>
+                    <span>Analytics</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'admin_audit_log' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_audit_log' %}active{% endif %}">
+                    <i class="fa-solid fa-file-shield"></i>
+                    <span>Audit Logs</span>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+
+        <div class="sidebar-footer">
+            <a href="{% url 'admin_logout' %}" class="logout-btn">
+                <i class="fa-solid fa-power-off"></i>
+                <span>Sign Out</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-wrapper">
+        <header class="topbar">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <button class="menu-toggle" onclick="toggleSidebar()"><i class="fa-solid fa-bars-staggered"></i></button>
+                <div class="page-info">
+                    <h1>{% block page_title %}Dashboard Overview{% endblock %}</h1>
+                </div>
+            </div>
+
+            <div class="user-profile">
+                <div class="user-avatar">{{ admin.username|first|upper }}</div>
+                <span class="user-name">{{ admin.get_full_name|default:admin.username }}</span>
+                <i class="fa-solid fa-chevron-down" style="font-size: 0.7rem; color: var(--text-light);"></i>
+            </div>
+        </header>
+
+        <main class="content-area">
+            {% if messages %}
+                {% for message in messages %}
+                <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+                    <i class="fa-solid {% if message.tags == 'success' %}fa-circle-check{% else %}fa-circle-exclamation{% endif %}"></i>
+                    {{ message }}
+                </div>
+                {% endfor %}
+            {% endif %}
+
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <!-- Lightbox -->
+    <div class="lightbox-backdrop" id="lightbox">
+        <div class="lightbox-container">
+            <span class="lightbox-close"><i class="fa-solid fa-xmark"></i></span>
+            <img id="lightbox-img" src="" alt="Preview">
+            <div id="lightbox-title"></div>
+        </div>
+    </div>
+
+    <!-- Shared Modal (Info/Details) -->
+    <div class="modal-backdrop" id="infoModalBackdrop" onclick="closeModal(event)">
+        <div class="modal-container" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3 id="modalTitle">Details</h3>
+                <button class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Content injected via JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal (Premium Design) -->
+    <div class="modal-backdrop" id="confirmModal">
+        <div class="modal-container" style="max-width: 420px; text-align: center; padding: 0; overflow: hidden;" onclick="event.stopPropagation()">
+            <div style="background: #fef2f2; padding: 2.5rem 1rem 2rem; display: flex; flex-direction: column; align-items: center; justify-content: center; border-bottom: 1px solid #fee2e2;">
+                <div style="width: 80px; height: 80px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #dc2626; font-size: 2.5rem; box-shadow: 0 10px 15px -3px rgba(220, 38, 38, 0.1);">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <h3 id="confirmTitle" style="margin-top: 1.5rem; font-weight: 800; color: #991b1b; font-size: 1.5rem; letter-spacing: -0.025em;">Are you sure?</h3>
+            </div>
+            <div style="padding: 2rem;">
+                <p id="confirmMessage" style="color: var(--text-muted); font-size: 1.05rem; margin-bottom: 2rem; line-height: 1.6;">This action cannot be undone.</p>
+                <div style="display: flex; gap: 1rem; justify-content: center;">
+                    <button class="btn" onclick="closeConfirmModal()" style="background: white; border: 1px solid var(--border-color); color: var(--text-main); font-weight: 700; padding: 12px 24px; font-size: 0.95rem;">Cancel</button>
+                    <a id="confirmBtn" href="#" class="btn" style="background: #dc2626; color: white; font-weight: 700; padding: 12px 24px; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3); font-size: 0.95rem; display: flex; align-items: center; gap: 8px;">
+                        <span>Yes, Proceed</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Toggle Sidebar
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.querySelector('.main-wrapper').classList.toggle('active');
+        }
+        
+        // Auto-close messages
+        setTimeout(() => {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                alert.style.opacity = '0';
+                setTimeout(() => alert.remove(), 500);
+            });
+        }, 4000);
+
+        /* --- Modal System Logic --- */
+        const infoModal = document.getElementById('infoModalBackdrop');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalBody = document.getElementById('modalBody');
+        const confirmModal = document.getElementById('confirmModal');
+
+        function openModal(title, content) {
+            if(!infoModal) return console.error('Info Modal not found');
+            modalTitle.innerHTML = title;
+            modalBody.innerHTML = content;
+            infoModal.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal(e) {
+            if (infoModal) infoModal.classList.remove('show');
+            document.body.style.overflow = 'auto';
+        }
+
+        /* --- Confirmation Logic --- */
+        function confirmAction(url, title = 'Are you sure?', message = 'Do you really want to proceed?') {
+            if(!confirmModal) {
+                console.error('Confirmation Modal not found');
+                return true; // Fallback to default navigation
+            }
+            document.getElementById('confirmTitle').innerText = title;
+            document.getElementById('confirmMessage').innerText = message;
+            document.getElementById('confirmBtn').href = url;
+            confirmModal.classList.add('show');
+            return false; // Prevent default link behavior
+        }
+
+        function closeConfirmModal() {
+            if(confirmModal) confirmModal.classList.remove('show');
+        }
+
+        /* --- Lightbox Logic --- */
+        function openLightbox(imgUrl, title) {
+            if (!imgUrl) return;
+            const lb = document.getElementById('lightbox');
+            const lbImg = document.getElementById('lightbox-img');
+            const lbTitle = document.getElementById('lightbox-title');
+            
+            if(!lb) return;
+
+            lbImg.src = imgUrl;
+            lbTitle.innerText = title || 'Gado Store Preview';
+            lb.classList.add('show');
+            
+            // Close event handler
+            const closeHandler = () => lb.classList.remove('show');
+            
+            // Attach / Re-attach events
+            lb.onclick = (e) => {
+                if(e.target === lb || e.target.closest('.lightbox-close')) {
+                    closeHandler();
+                }
+            };
+        }
+
+        /* --- View Details Fetchers --- */
+        async function viewProductDetails(productId) {
+            openModal('<i class="fa-solid fa-spinner fa-spin"></i> Loading...', '<div style="text-align: center; padding: 3rem;"><i class="fa-solid fa-circle-notch fa-spin" style="font-size: 2rem; color: var(--primary);"></i></div>');
+            try {
+                const res = await fetch(`/owner/api/products/${productId}/`);
+                if(!res.ok) throw new Error('API Error');
+                const data = await res.json();
+                
+                const html = `
+                    <div style="display: flex; gap: 2rem; align-items: start;">
+                        <div class="premium-image-wrapper" style="width: 200px; height: 200px; border-radius: 16px;" onclick="openLightbox('${data.image || ''}', '${data.name}')">
+                            ${data.image ? `<img src="${data.image}" style="width: 100%; height: 100%; object-fit: cover;">` : `<div style="height: 100%; display: flex; align-items: center; justify-content: center; color: var(--text-light);"><i class="fa-solid fa-image fa-2x"></i></div>`}
+                            <div class="premium-image-overlay" style="font-size: 1.5rem;"><i class="fa-solid fa-expand"></i></div>
+                        </div>
+                        <div style="flex: 1;">
+                            <h2 style="font-weight: 800; margin-bottom: 0.5rem; color: var(--text-main);">${data.name}</h2>
+                            <span class="badge ${data.available ? 'badge-success' : 'badge-danger'}" style="margin-bottom: 1.5rem;">${data.available ? 'Active' : 'Disabled'}</span>
+                            
+                            <div class="info-grid">
+                                <div class="info-item"><label>Category</label><span>${data.category}</span></div>
+                                <div class="info-item"><label>Price</label><span style="color: var(--primary);">$${data.price}</span></div>
+                                <div class="info-item"><label>Stock</label><span>${data.quantity} Units</span></div>
+                                <div class="info-item"><label>Created At</label><span>${data.created_at}</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color);">
+                        <label style="display: block; font-size: 0.75rem; font-weight: 800; color: var(--text-light); text-transform: uppercase; margin-bottom: 0.5rem;">Description</label>
+                        <p style="color: var(--text-muted); line-height: 1.6; font-size: 0.95rem;">${data.description || 'No description provided.'}</p>
+                    </div>
+                `;
+                openModal('<i class="fa-solid fa-box-open" style="color: var(--primary);"></i> Product Information', html);
+            } catch (err) {
+                console.error(err);
+                openModal('Error', 'Failed to load details.');
+            }
+        }
+
+        async function viewOrderDetails(orderId) {
+            openModal('<i class="fa-solid fa-spinner fa-spin"></i> Loading...', '<div style="text-align: center; padding: 3rem;"><i class="fa-solid fa-circle-notch fa-spin" style="font-size: 2rem; color: var(--primary);"></i></div>');
+            try {
+                const res = await fetch(`/owner/api/orders/${orderId}/`);
+                if(!res.ok) throw new Error('API Error');
+                const data = await res.json();
+                
+                let itemsHtml = '';
+                data.items.forEach(item => {
+                    itemsHtml += `
+                        <tr>
+                            <td style="width: 60px;">
+                                <div class="premium-image-wrapper" style="width: 48px; height: 48px; border-radius: 8px;" onclick="openLightbox('${item.image}', '${item.product.replace(/'/g, "\\'")}')">
+                                    <img src="${item.image}" style="width: 100%; height: 100%; object-fit: cover;">
+                                    <div class="premium-image-overlay"><i class="fa-solid fa-expand"></i></div>
+                                </div>
+                            </td>
+                            <td style="font-weight: 700;">${item.product}</td>
+                            <td>${item.quantity}</td>
+                            <td>$${item.price}</td>
+                            <td style="font-weight: 800; color: var(--text-main); text-align: right;">$${item.total}</td>
+                        </tr>
+                    `;
+                });
+
+                const html = `
+                    <div class="info-grid">
+                        <div class="info-item"><label>Customer</label><span>${data.customer} (@${data.username})</span></div>
+                        <div class="info-item"><label>Order Status</label><span class="badge badge-info">${data.status}</span></div>
+                        <div class="info-item"><label>Contact</label><span>${data.phone || 'N/A'}</span></div>
+                        <div class="info-item"><label>Email</label><span>${data.email}</span></div>
+                    </div>
+                    <div class="info-item" style="margin-bottom: 2rem;"><label>Delivery Address</label><span>${data.address}</span></div>
+                    
+                    <h4 style="font-weight: 800; font-size: 0.9rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px;">
+                        <i class="fa-solid fa-list-check" style="color: var(--primary);"></i> Items Ordered
+                    </h4>
+                    <table class="order-items-table">
+                        <thead>
+                            <tr><th style="width: 60px;">Image</th><th>Product</th><th>Qty</th><th>Price</th><th style="text-align: right;">Total</th></tr>
+                        </thead>
+                        <tbody>${itemsHtml}</tbody>
+                    </table>
+                    <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end; align-items: center; gap: 15px;">
+                        <span style="font-weight: 800; color: var(--text-light);">TOTAL AMOUNT:</span>
+                        <span style="font-size: 1.5rem; font-weight: 900; color: var(--primary);">$${data.total}</span>
+                    </div>
+                `;
+                openModal('<i class="fa-solid fa-receipt" style="color: var(--primary);"></i> Order #'+data.id+' Details', html);
+            } catch (err) {
+                console.error(err);
+                openModal('Error', 'Failed to load order details.');
+            }
+        }
+
+        async function viewCustomerDetails(customerId) {
+            openModal('<i class="fa-solid fa-spinner fa-spin"></i> Loading...', '<div style="text-align: center; padding: 3rem;"><i class="fa-solid fa-circle-notch fa-spin" style="font-size: 2rem; color: var(--primary);"></i></div>');
+            try {
+                const res = await fetch(`/owner/api/customers/${customerId}/`);
+                if(!res.ok) throw new Error('API Error');
+                const data = await res.json();
+                
+                const html = `
+                    <div style="display: flex; gap: 2rem; align-items: start;">
+                        <div style="width: 150px; height: 150px; background: var(--bg-body); border-radius: 50%; overflow: hidden; border: 4px solid white; box-shadow: var(--shadow-md);">
+                            ${data.image ? `<img src="${data.image}" style="width: 100%; height: 100%; object-fit: cover;">` : `<div style="height: 100%; display: flex; align-items: center; justify-content: center; background: var(--primary); color: white; font-size: 3rem; font-weight: 800;">${data.name.charAt(0)}</div>`}
+                        </div>
+                        <div style="flex: 1;">
+                            <h2 style="font-weight: 800; margin-bottom: 0.25rem; color: var(--text-main);">${data.name}</h2>
+                            <p style="color: var(--text-muted); font-weight: 600; margin-bottom: 1.5rem;">@${data.username}</p>
+                            
+                            <div class="info-grid">
+                                <div class="info-item"><label>Email Address</label><span>${data.email}</span></div>
+                                <div class="info-item"><label>Phone Number</label><span>${data.phone}</span></div>
+                                <div class="info-item"><label>Gender</label><span>${data.gender}</span></div>
+                                <div class="info-item"><label>Member Since</label><span>${data.joined_at}</span></div>
+                                ${data.password ? `<div class="info-item"><label style="color:#ef4444;">Password</label><span style="font-family:monospace; background: #fef2f2; padding: 2px 6px; border-radius: 4px; border: 1px solid #fee2e2; color: #ef4444;">${data.password}</span></div>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 1rem; padding: 1.5rem; background: var(--bg-body); border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 1.5rem;">
+                        <label style="display: block; font-size: 0.75rem; font-weight: 800; color: var(--text-light); text-transform: uppercase; margin-bottom: 0.5rem;">Shipping Address</label>
+                        <p style="color: var(--text-main); font-weight: 600; line-height: 1.6;">${data.address}</p>
+                    </div>
+
+                    <h4 style="font-weight: 800; font-size: 0.9rem; margin-bottom: 1rem; color: var(--text-main);">Order Statistics</h4>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+                        <div style="background: #eff6ff; padding: 1rem; border-radius: 16px; border: 1px solid #dbeafe;">
+                            <label style="display: block; font-size: 0.65rem; font-weight: 800; color: #3b82f6; text-transform: uppercase;">Total Orders</label>
+                            <span style="font-size: 1.25rem; font-weight: 900; color: #1e40af;">${data.total_orders}</span>
+                        </div>
+                        <div style="background: #f0fdf4; padding: 1rem; border-radius: 16px; border: 1px solid #dcfce7;">
+                            <label style="display: block; font-size: 0.65rem; font-weight: 800; color: #16a34a; text-transform: uppercase;">Total Spent</label>
+                            <span style="font-size: 1.25rem; font-weight: 900; color: #166534;">$${data.total_spent}</span>
+                        </div>
+                        <div style="background: #fffbeb; padding: 1rem; border-radius: 16px; border: 1px solid #fef3c7;">
+                            <label style="display: block; font-size: 0.65rem; font-weight: 800; color: #d97706; text-transform: uppercase;">Pending</label>
+                            <span style="font-size: 1.25rem; font-weight: 900; color: #92400e;">${data.pending_orders}</span>
+                        </div>
+                    </div>
+                    <div style="margin-top: 1rem; text-align: right;">
+                        <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-light);">Last Order: <b style="color: var(--text-muted);">${data.last_order}</b></span>
+                    </div>
+                `;
+                openModal('<i class="fa-solid fa-user-tag" style="color: var(--primary);"></i> Customer Profile', html);
+            } catch (err) {
+                console.error(err);
+                openModal('Error', 'Failed to load customer details.');
+            }
+        }
+
+
+        async function editCustomer(customerId) {
+            openModal('<i class="fa-solid fa-spinner fa-spin"></i> Loading...', '<div style="text-align: center; padding: 3rem;"><i class="fa-solid fa-circle-notch fa-spin" style="font-size: 2rem; color: var(--primary);"></i></div>');
+            try {
+                // Fetch current data
+                const res = await fetch(`/owner/api/customers/${customerId}/`);
+                if(!res.ok) throw new Error('API Error');
+                const data = await res.json();
+                
+                // Construct Form
+                const html = `
+                    <form id="editCustomerForm" onsubmit="handleCustomerUpdate(event, ${customerId})">
+                        <div style="display: flex; gap: 2rem; margin-bottom: 2rem;">
+                            <div style="width: 120px; text-align: center;">
+                                <div class="premium-image-wrapper" style="width: 120px; height: 120px; border-radius: 50%; border: 4px solid white; box-shadow: var(--shadow-md); margin-bottom: 1rem; position: relative; overflow: visible;">
+                                    ${data.image ? `<img id="preview_img" src="${data.image}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">` : `<div id="preview_placeholder" style="width: 100%; height: 100%; background: var(--bg-body); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 2rem; color: var(--primary);">${data.name.charAt(0)}</div>`}
+                                    <label for="profile_upload" style="position: absolute; bottom: 0; right: 0; background: var(--primary); color: white; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 3px solid white; box-shadow: var(--shadow-sm); transition: var(--transition);">
+                                        <i class="fa-solid fa-camera"></i>
+                                    </label>
+                                    <input type="file" id="profile_upload" name="image" style="display: none;" onchange="previewImage(this)">
+                                </div>
+                                <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-light);">Profile Photo</span>
+                            </div>
+                            
+                            <div style="flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                                <div class="form-group">
+                                    <label class="form-label">Full Name</label>
+                                    <input type="text" name="name" class="form-control" value="${data.name}" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Username</label>
+                                    <input type="text" name="username" class="form-control" value="${data.username}" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Email Address</label>
+                                    <input type="email" name="email" class="form-control" value="${data.email}" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Phone Number</label>
+                                    <input type="text" name="phone" class="form-control" value="${data.phone !== 'Not provided' ? data.phone : ''}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="info-grid">
+                            <div class="form-group">
+                                <label class="form-label">Gender</label>
+                                <select name="gender" class="form-control">
+                                    <option value="nin" ${data.gender_value === 'nin' ? 'selected' : ''}>Male</option>
+                                    <option value="naag" ${data.gender_value === 'naag' ? 'selected' : ''}>Female</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" style="color: #ef4444;">Password</label>
+                                <div style="position: relative;">
+                                    <input type="text" name="password" class="form-control" value="${data.password || ''}" required style="padding-right: 40px; font-family: monospace;">
+                                    <i class="fa-solid fa-lock" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--text-light);"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Shipping Address</label>
+                            <textarea name="address" class="form-control" style="min-height: 80px;">${data.address !== 'No address on file' ? data.address : ''}</textarea>
+                        </div>
+
+                        <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--border-color);">
+                            <button type="button" class="btn" onclick="closeModal()" style="background: white; border: 1px solid var(--border-color); color: var(--text-main);">Cancel</button>
+                            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Save Changes</button>
+                        </div>
+                    </form>
+                `;
+                openModal('<i class="fa-solid fa-user-pen" style="color: var(--primary);"></i> Edit Customer', html);
+            } catch (err) {
+                console.error(err);
+                openModal('Error', 'Failed to load user for editing.');
+            }
+        }
+
+        async function handleCustomerUpdate(e, id) {
+            e.preventDefault();
+            const form = e.target;
+            const formData = new FormData(form);
+            const btn = form.querySelector('button[type="submit"]');
+            
+            // UI Feedback
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch(`/owner/api/customers/update/${id}/`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                
+                if(data.success) {
+                    closeModal();
+                    // Show success toast (basic alert for now or reload)
+                    // Reload to reflect changes
+                    window.location.reload(); 
+                } else {
+                    alert('Error: ' + data.message);
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Network error occurred.');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        function previewImage(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.getElementById('preview_img');
+                    const placeholder = document.getElementById('preview_placeholder');
+                    if(img) img.src = e.target.result;
+                    else {
+                        // If placeholder exists, replace with img
+                         if(placeholder) {
+                             placeholder.innerHTML = `<img id="preview_img" src="${e.target.result}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+                             placeholder.style.background = 'transparent';
+                             placeholder.id = ''; // remove ID used for placeholder
+                         }
+                    }
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        async function viewCategoryDetails(categoryId) {
+            openModal('<i class="fa-solid fa-spinner fa-spin"></i> Loading...', '<div style="text-align: center; padding: 3rem;"><i class="fa-solid fa-circle-notch fa-spin" style="font-size: 2rem; color: var(--primary);"></i></div>');
+            try {
+                const res = await fetch(`/owner/api/categories/${categoryId}/`);
+                if(!res.ok) throw new Error('API Error');
+                const data = await res.json();
+                
+                let productsHtml = '';
+                if (data.products && data.products.length > 0) {
+                    data.products.forEach(p => {
+                        productsHtml += `
+                            <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px; background: var(--bg-body); border-radius: 12px; margin-bottom: 8px; border: 1px solid var(--border-color);">
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <div class="premium-image-wrapper" style="width: 40px; height: 40px; border-radius: 8px;" onclick="openLightbox('${p.image || ''}', '${p.name.replace(/'/g, "\\'")}')">
+                                        ${p.image ? `<img src="${p.image}" style="width:100%; height:100%; object-fit:cover;">` : `<div style="height:100%; display:flex; align-items:center; justify-content:center; color:#ccc;"><i class="fa-solid fa-image"></i></div>`}
+                                        <div class="premium-image-overlay"><i class="fa-solid fa-expand"></i></div>
+                                    </div>
+                                    <div>
+                                        <div style="font-weight: 700; font-size: 0.85rem; color: var(--text-main);">${p.name}</div>
+                                        <div style="font-size: 0.75rem; color: var(--text-muted);">$${p.price} | ${p.quantity} In Stock</div>
+                                    </div>
+                                </div>
+                                <span class="badge ${p.available ? 'badge-success' : 'badge-danger'}" style="font-size: 0.65rem;">${p.available ? 'Active' : 'Disabled'}</span>
+                            </div>
+                        `;
+                    });
+                } else {
+                    productsHtml = '<div style="text-align: center; padding: 2rem; color: var(--text-light); font-size: 0.85rem;">Ma jiraan wax alaab ah oo ku jira qaybtan.</div>';
+                }
+
+                const html = `
+                    <div style="margin-bottom: 2rem;">
+                        <h2 style="font-weight: 800; margin-bottom: 0.5rem; color: var(--text-main);">${data.name}</h2>
+                        <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1rem;">
+                            <span class="badge badge-info" style="font-size: 0.75rem;"><i class="fa-solid fa-boxes-stacked"></i> ${data.product_count} Products</span>
+                            <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-light);">Created: ${data.created_at}</span>
+                        </div>
+                        <div style="padding: 1rem; background: var(--bg-body); border-radius: 12px; border: 1px solid var(--border-color);">
+                            <label style="display: block; font-size: 0.7rem; font-weight: 800; color: var(--text-light); text-transform: uppercase; margin-bottom: 0.4rem;">Category Description</label>
+                            <p style="color: var(--text-muted); line-height: 1.5; font-size: 0.9rem; margin: 0;">${data.description}</p>
+                        </div>
+                    </div>
+                    
+                    <h4 style="font-weight: 800; font-size: 0.9rem; margin-bottom: 1rem; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+                        <i class="fa-solid fa-layer-group" style="color: var(--primary);"></i> Products in this Category
+                    </h4>
+                    <div style="max-height: 300px; overflow-y: auto; padding-right: 5px;">
+                        ${productsHtml}
+                    </div>
+                `;
+                openModal('<i class="fa-solid fa-tags" style="color: var(--primary);"></i> Category Intelligence', html);
+            } catch (err) {
+                console.error('Category View Error:', err);
+                openModal('Error', `Failed to load details: ${err.message}`);
+            }
+        }
+
+        // Close modals on outside click
+        window.onclick = function(event) {
+            const modal = document.getElementById('infoModalBackdrop');
+            const confirmModal = document.getElementById('confirmModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+            if (event.target == confirmModal) {
+                closeConfirmModal();
+            }
+        }
+    </script>
+</body>
+</html>

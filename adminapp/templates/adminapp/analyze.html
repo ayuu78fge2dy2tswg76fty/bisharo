@@ -1,0 +1,295 @@
+{% extends 'adminapp/base.html' %}
+
+{% block title %}Analytics Dashboard | Gado Admin{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .analytics-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    @media (max-width: 1200px) {
+        .analytics-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 600px) {
+        .analytics-grid { grid-template-columns: 1fr; }
+    }
+
+    .stat-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 20px;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--border-color);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .stat-card i {
+        position: absolute;
+        right: -10px;
+        bottom: -10px;
+        font-size: 5rem;
+        opacity: 0.05;
+        color: var(--primary);
+    }
+
+    .stat-value {
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: var(--text-main);
+        display: block;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--text-light);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .chart-container {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 24px;
+        border: 1px solid var(--border-color);
+        box-shadow: var(--shadow-sm);
+        margin-bottom: 1.5rem;
+        height: 100%;
+    }
+
+    .inventory-status {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .status-badge {
+        flex: 1;
+        padding: 1rem;
+        border-radius: 12px;
+        text-align: center;
+    }
+
+    .status-warning { background: #fff7ed; border: 1px solid #ffedd5; color: #9a3412; }
+    .status-danger { background: #fef2f2; border: 1px solid #fee2e2; color: #991b1b; }
+    .status-success { background: #f0fdf4; border: 1px solid #dcfce7; color: #166534; }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Top Stats Row -->
+<div class="analytics-grid">
+    <div class="stat-card">
+        <span class="stat-label">Total Revenue</span>
+        <span class="stat-value">${{ finances.revenue|floatformat:2 }}</span>
+        <div style="font-size: 0.75rem; color: #16a34a; font-weight: 700;">
+            <i class="fa-solid fa-arrow-trend-up"></i> Sales performance
+        </div>
+        <i class="fa-solid fa-sack-dollar"></i>
+    </div>
+
+    <div class="stat-card">
+        <span class="stat-label">Total Transactions</span>
+        <span class="stat-value">{{ sales.transactions }}</span>
+        <div style="font-size: 0.75rem; color: var(--text-light); font-weight: 700;">
+            Successful orders
+        </div>
+        <i class="fa-solid fa-receipt"></i>
+    </div>
+
+    <div class="stat-card">
+        <span class="stat-label">Total Products</span>
+        <span class="stat-value">{{ inventory.total }}</span>
+        <div style="font-size: 0.75rem; color: var(--text-light); font-weight: 700;">
+            Items in catalog
+        </div>
+        <i class="fa-solid fa-box"></i>
+    </div>
+
+    <div class="stat-card">
+        <span class="stat-label">Total Staff</span>
+        <span class="stat-value" style="color: var(--primary);">{{ sales.total_admins }}</span>
+        <div style="font-size: 0.75rem; color: var(--text-light); font-weight: 700;">
+            Administrators & Moderator
+        </div>
+        <i class="fa-solid fa-user-shield"></i>
+    </div>
+
+    <div class="stat-card">
+        <span class="stat-label">Total Customers</span>
+        <span class="stat-value">{{ sales.total_customers }}</span>
+        <div style="font-size: 0.75rem; color: var(--text-light); font-weight: 700;">
+            Registered users
+        </div>
+        <i class="fa-solid fa-users"></i>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+    <!-- Sales Chart -->
+    <div class="chart-container">
+        <h4 style="font-weight: 800; margin-bottom: 1.5rem;">Sales Trends (Last 30 Days)</h4>
+        <div style="height: 300px;">
+            <canvas id="salesChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Inventory Health -->
+    <div class="chart-container">
+        <h4 style="font-weight: 800; margin-bottom: 1rem;">Inventory Health</h4>
+        <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">Total Stock: <b>{{ inventory.total }} Products</b></div>
+        
+        <div class="status-badge status-warning" style="margin-bottom: 1rem;">
+            <div style="font-size: 1.25rem; font-weight: 800;">{{ inventory.low_stock.count }}</div>
+            <div style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase;">Low Stock Items</div>
+        </div>
+
+        <div class="status-badge status-danger">
+            <div style="font-size: 1.25rem; font-weight: 800;">{{ inventory.out_of_stock.count }}</div>
+            <div style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase;">Out of Stock</div>
+        </div>
+
+        <div style="margin-top: 1.5rem; height: 150px;">
+            <canvas id="inventoryPie"></canvas>
+        </div>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+    <!-- Best Sellers -->
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h4 style="font-weight: 800; margin-bottom: 0;">🔥 Best Selling Products</h4>
+            <a href="{% url 'admin_product_list' %}" style="font-size: 0.75rem; font-weight: 700; color: var(--primary);">View Inventory</a>
+        </div>
+        <table style="width: 100%; border-collapse: separate; border-spacing: 0 8px;">
+            <thead>
+                <tr style="text-align: left; font-size: 0.75rem; color: var(--text-light); text-transform: uppercase;">
+                    <th>Product</th>
+                    <th>Sold</th>
+                    <th>Revenue</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for prod in sales.best_sellers %}
+                <tr>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            {% if prod.image %}
+                            <img src="{{ prod.image.url }}" style="width: 32px; height: 32px; border-radius: 8px; object-fit: cover;">
+                            {% else %}
+                            <div style="width: 32px; height: 32px; border-radius: 8px; background: var(--bg-body); display: flex; align-items: center; justify-content: center;"><i class="fa-solid fa-box" style="font-size: 0.7rem;"></i></div>
+                            {% endif %}
+                            <span style="font-weight: 700; font-size: 0.85rem; color: var(--text-main);">{{ prod.name }}</span>
+                        </div>
+                    </td>
+                    <td><span class="badge" style="background: #e0f2fe; color: #0369a1;">{{ prod.total_sold }}</span></td>
+                    <td style="font-weight: 700; font-size: 0.85rem;">${{ prod.price }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="3" style="text-align: center; padding: 2rem; color: var(--text-light);">No sales data recorded yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Low Stock Alert Window -->
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h4 style="font-weight: 800; margin-bottom: 0; color: #991b1b;"><i class="fa-solid fa-triangle-exclamation"></i> Critical Inventory</h4>
+            <span class="badge" style="background: #fef2f2; color: #991b1b;">{{ inventory.low_stock.count }} Alert(s)</span>
+        </div>
+        <div style="max-height: 250px; overflow-y: auto; padding-right: 5px;">
+            {% for prod in inventory.low_stock %}
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px; background: var(--bg-body); border-radius: 12px; margin-bottom: 10px; border-left: 4px solid #f97316;">
+                <div>
+                    <h5 style="font-weight: 700; font-size: 0.85rem; margin-bottom: 2px;">{{ prod.name }}</h5>
+                    <span style="font-size: 0.75rem; color: var(--text-muted);">Current Stock: <b>{{ prod.quatentity }}</b></span>
+                </div>
+                <a href="{% url 'admin_product_edit' prod.id %}" class="btn" style="padding: 6px 12px; font-size: 0.7rem; background: var(--primary); color: white;">Restock</a>
+            </div>
+            {% empty %}
+            <div style="text-align: center; padding: 3rem; color: var(--text-light);">
+                <i class="fa-solid fa-circle-check" style="font-size: 2rem; margin-bottom: 1rem; color: #16a34a;"></i>
+                <p>Inventory is healthy. No items currently low on stock.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Sales Trends Chart
+    const ctxSales = document.getElementById('salesChart').getContext('2d');
+    const salesChart = new Chart(ctxSales, {
+        type: 'line',
+        data: {
+            labels: {{ charts.labels|safe }},
+            datasets: [{
+                label: 'Revenue ($)',
+                data: {{ charts.sales_data|safe }},
+                borderColor: '#10b981',
+                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                fill: true,
+                tension: 0.4,
+                borderWidth: 3,
+                pointRadius: 4,
+                pointBackgroundColor: '#fff',
+                pointBorderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, grid: { borderDash: [5, 5], color: '#f1f5f9' } },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+
+    // Inventory Distribution Chart
+    const ctxInv = document.getElementById('inventoryPie').getContext('2d');
+    new Chart(ctxInv, {
+        type: 'doughnut',
+        data: {
+            labels: {{ charts.category_labels|safe }},
+            datasets: [{
+                data: {{ charts.category_counts|safe }},
+                backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'],
+                borderWidth: 0,
+                cutout: '70%'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom', labels: { boxWidth: 10, font: { weight: 'bold', size: 10 } } }
+            }
+        }
+    });
+
+    // Auto-refresh every 5 minutes
+    setTimeout(() => {
+        window.location.reload();
+    }, 300000);
+</script>
+{% endblock %}

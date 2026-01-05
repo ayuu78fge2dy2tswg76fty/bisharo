@@ -1,0 +1,394 @@
+{% extends 'coreapp/base.html' %}
+
+{% block title %}Home | Gado Store{% endblock %}
+
+{% block extra_styles %}
+<style>
+    /* --- Premier Hero Section --- */
+    .home-hero {
+        min-height: 100vh;
+        background: radial-gradient(circle at top right, #1e293b 0%, #0f172a 100%);
+        position: relative;
+        display: flex;
+        align-items: center;
+        padding: 8rem 5% 4rem;
+        overflow: hidden;
+    }
+
+    /* Animated Background Blobs */
+    .hero-blob {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(80px);
+        opacity: 0.6;
+        animation: floatBlob 10s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 1;
+    }
+
+    .blob-1 { top: -10%; right: -10%; width: 600px; height: 600px; background: rgba(79, 70, 229, 0.25); }
+    .blob-2 { bottom: 10%; left: -5%; width: 500px; height: 500px; background: rgba(16, 185, 129, 0.15); animation-delay: -5s; }
+
+    @keyframes floatBlob {
+        0% { transform: translate(0, 0) scale(1); }
+        100% { transform: translate(-30px, 30px) scale(1.1); }
+    }
+
+    .hero-container {
+        display: grid;
+        grid-template-columns: 1.2fr 1fr;
+        gap: 4rem;
+        max-width: 1400px;
+        margin: 0 auto;
+        position: relative;
+        z-index: 2;
+        width: 100%;
+        align-items: center;
+    }
+
+    .hero-text-content {
+        animation: slideUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateY(40px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero-badge-prem {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0.6rem 1.2rem;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 100px;
+        color: #94a3b8;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        margin-bottom: 2rem;
+        backdrop-filter: blur(10px);
+    }
+
+    .hero-badge-prem i { color: #10b981; }
+
+    .hero-title-prem {
+        font-size: clamp(3.5rem, 6vw, 5.5rem);
+        font-weight: 800;
+        line-height: 1.05;
+        margin-bottom: 1.5rem;
+        color: white;
+        letter-spacing: -2px;
+    }
+
+    .text-gradient {
+        background: linear-gradient(135deg, #ffffff 30%, #94a3b8 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .hero-desc-prem {
+        font-size: 1.2rem;
+        color: #94a3b8;
+        line-height: 1.8;
+        margin-bottom: 3rem;
+        max-width: 600px;
+    }
+
+    .hero-actions-prem {
+        display: flex;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .btn-prem-primary {
+        background: white;
+        color: #0f172a;
+        padding: 1.2rem 2.5rem;
+        border-radius: 16px;
+        font-weight: 700;
+        font-size: 1.05rem;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        box-shadow: 0 20px 40px -10px rgba(255, 255, 255, 0.15);
+    }
+
+    .btn-prem-primary:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 30px 60px -15px rgba(255, 255, 255, 0.25);
+    }
+
+    .btn-prem-glass {
+        background: rgba(255, 255, 255, 0.05);
+        color: white;
+        padding: 1.2rem 2.5rem;
+        border-radius: 16px;
+        font-weight: 700;
+        font-size: 1.05rem;
+        text-decoration: none;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .btn-prem-glass:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: white;
+        transform: translateY(-5px);
+    }
+
+    .hero-visual {
+        position: relative;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Floating Showcase Card in Hero */
+    .hero-card-float {
+        background: rgba(30, 41, 59, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 30px;
+        padding: 2rem;
+        backdrop-filter: blur(20px);
+        transform: rotate(-5deg) translateY(20px);
+        animation: floatCard 6s infinite alternate ease-in-out;
+        max-width: 400px;
+        box-shadow: 0 40px 80px -20px rgba(0,0,0,0.3);
+    }
+
+    @keyframes floatCard {
+        0% { transform: rotate(-5deg) translateY(20px); }
+        100% { transform: rotate(-5deg) translateY(-20px); }
+    }
+
+    /* --- Floating Features Strip --- */
+    .features-container-prem {
+        max-width: 1200px;
+        margin: -5rem auto 5rem;
+        padding: 0 2rem;
+        position: relative;
+        z-index: 10;
+    }
+
+    .features-glass-panel {
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        padding: 3rem;
+        border-radius: 30px;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 3rem;
+        box-shadow: 0 25px 50px -12px rgba(0,0,0,0.1);
+        transform: translateY(0);
+        transition: transform 0.4s ease;
+    }
+
+    .features-glass-panel:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 35px 60px -15px rgba(0,0,0,0.15);
+    }
+
+    .feature-item-prem {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+    }
+
+    .feature-icon-prem {
+        width: 64px;
+        height: 64px;
+        background: linear-gradient(135deg, #f1f5f9, white);
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.75rem;
+        color: #0f172a;
+        box-shadow: 0 10px 20px -5px rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+    }
+
+    .feature-item-prem:hover .feature-icon-prem {
+        background: #0f172a;
+        color: white;
+        transform: scale(1.1) rotate(5deg);
+    }
+
+    .feature-text-prem h3 {
+        font-size: 1.2rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin-bottom: 0.3rem;
+    }
+
+    .feature-text-prem p {
+        color: #64748b;
+        font-size: 0.95rem;
+        line-height: 1.4;
+    }
+
+    /* --- Products & Newsletter (Refined) --- */
+    .products-section { padding: 4rem 5% 6rem; }
+    
+    .section-header-prem { text-align: center; margin-bottom: 5rem; }
+    
+    .section-tag-prem {
+        font-size: 0.85rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        background: linear-gradient(135deg, #4f46e5, #818cf8);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 1rem;
+        display: block;
+    }
+
+    .section-title-prem {
+        font-size: 3rem;
+        font-weight: 800;
+        color: #0f172a;
+        letter-spacing: -1px;
+    }
+
+    @media (max-width: 968px) {
+        .hero-container { grid-template-columns: 1fr; text-align: center; gap: 3rem; }
+        .hero-actions-prem { justify-content: center; }
+        .hero-visual { display: none; }
+        .hero-title-prem { font-size: 3.5rem; }
+        .features-glass-panel { padding: 2rem; }
+        .feature-item-prem { flex-direction: column; text-align: center; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+    <!-- Premier Hero -->
+    <section class="home-hero">
+        <div class="hero-blob blob-1"></div>
+        <div class="hero-blob blob-2"></div>
+        
+        <div class="hero-container">
+            <div class="hero-text-content">
+                <span class="hero-badge-prem"><i class="fa-solid fa-gem"></i> Premier Experience</span>
+                <h1 class="hero-title-prem">Redefining <br><span class="text-gradient">E-Commerce.</span></h1>
+                <p class="hero-desc-prem">Discover a curated selection of products that blend style, quality, and innovation. Elevate your everyday with Gado Store.</p>
+                <div class="hero-actions-prem">
+                    <a href="#products" class="btn-prem-primary">Browse Collection</a>
+                    <a href="{% url 'about' %}" class="btn-prem-glass"><i class="fa-solid fa-play"></i> Our Story</a>
+                </div>
+            </div>
+            
+            <div class="hero-visual">
+                <!-- Abstract 3D Representation (CSS Only) -->
+                <div class="hero-card-float">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+                        <div style="width:40px; height:40px; background:rgba(255,255,255,0.2); border-radius:10px;"></div>
+                        <div style="width:20px; height:20px; border-radius:50%; background:#10b981;"></div>
+                    </div>
+                    <div style="height:150px; background:rgba(255,255,255,0.1); border-radius:16px; margin-bottom:1.5rem;"></div>
+                    <div style="height:20px; width:70%; background:rgba(255,255,255,0.2); border-radius:4px; margin-bottom:0.8rem;"></div>
+                    <div style="height:20px; width:40%; background:rgba(255,255,255,0.2); border-radius:4px;"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Floating Features -->
+    <div class="features-container-prem">
+        <div class="features-glass-panel">
+            <div class="feature-item-prem">
+                <div class="feature-icon-prem"><i class="fa-solid fa-truck-fast"></i></div>
+                <div class="feature-text-prem">
+                    <h3>Free Shipping</h3>
+                    <p>On all orders over $50</p>
+                </div>
+            </div>
+            <div class="feature-item-prem">
+                <div class="feature-icon-prem"><i class="fa-solid fa-shield-halved"></i></div>
+                <div class="feature-text-prem">
+                    <h3>Secure Payment</h3>
+                    <p>100% authenticated</p>
+                </div>
+            </div>
+            <div class="feature-item-prem">
+                <div class="feature-icon-prem"><i class="fa-solid fa-rotate-left"></i></div>
+                <div class="feature-text-prem">
+                    <h3>Easy Returns</h3>
+                    <p>30-day money back guarantee</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Products Showcase -->
+    <section id="products" class="products-section">
+        <div class="section-header-prem">
+            <span class="section-tag-prem">New Arrivals</span>
+            <h2 class="section-title-prem">Trending Now</h2>
+        </div>
+        
+        <div class="products-grid">
+            {% for product in products %}
+            <div class="product-card">
+                <div class="product-image">
+                    <span class="badge-category">{{ product.category.name }}</span>
+                    {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                    {% else %}
+                    <img src="https://via.placeholder.com/400x300?text=No+Image" alt="No Image">
+                    {% endif %}
+                </div>
+                <div class="product-info">
+                    <h3 class="product-title">{{ product.name }}</h3>
+                    <div class="product-price">${{ product.price }}</div>
+                    
+                    <div class="product-actions">
+                        <button class="btn-action btn-view"
+                            onclick="viewProduct(this)" 
+                            data-id="{{ product.id }}"
+                            data-title="{{ product.name }}"
+                            data-price="{{ product.price }}"
+                            data-desc="{{ product.description }}"
+                            data-image="{% if product.image %}{{ product.image.url }}{% else %}https://via.placeholder.com/400x200?text=No+Image{% endif %}">
+                            <i class="fa-regular fa-eye"></i> View
+                        </button>
+                        <button class="btn-action btn-order" onclick="showLoginPrompt()">
+                            <i class="fa-solid fa-cart-shopping"></i> Order
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div style="grid-column: 1 / -1; text-align: center; padding: 6rem 2rem; background: #f8fafc; border-radius: 30px; border: 2px dashed #e2e8f0;">
+                <div style="width: 100px; height: 100px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 2rem; color: #94a3b8; font-size: 3rem; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
+                    <i class="fa-solid fa-box-open"></i>
+                </div>
+                <h3 style="color: #0f172a; font-size: 1.5rem; font-weight: 800; margin-bottom: 0.5rem;">No products found</h3>
+                <p style="color: #64748b;">We are currently restocking. Check back soon!</p>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Newsletter -->
+    <section class="newsletter-section">
+        <div class="newsletter-content">
+            <h2 class="newsletter-title">Join the Club</h2>
+            <p class="newsletter-desc">Subscribe to our newsletter and get 10% off your first order plus exclusive deals.</p>
+            <form class="newsletter-form" onsubmit="event.preventDefault(); alert('Subscribed!');">
+                <input type="email" class="newsletter-input" placeholder="Enter your email address" required>
+                <button type="submit" class="newsletter-btn">Subscribe</button>
+            </form>
+        </div>
+    </section>
+{% endblock %}
